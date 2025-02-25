@@ -6,7 +6,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 
-public class OrderScreen extends JFrame {
+public class MainScreen extends JFrame {
     private JPanel topPanel;
     private JLabel applicationName;
 
@@ -18,7 +18,7 @@ public class OrderScreen extends JFrame {
     private final static String[] ORDER_TABLE_COLUMNS = {"OrderNo", "ItemNo", "Qty", "Client Name", "Price", "Transport Costs", "Total Costs"};
     private final static String[] BILL_TABLE_COLUMNS = {"BillNo","OrderNo","Client Name","Billing Price"};
 
-    public OrderScreen(){
+    public MainScreen(){
         super("Order Screen");
         this.setSize(1000, 700);
         this.setLocationRelativeTo(null);
