@@ -1,6 +1,8 @@
 package Components;
 
+import app.MainScreen;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +20,7 @@ public class Toolbar extends JPanel {
 
     private Table currentTable;
 
-    public Toolbar(){
+    public Toolbar() {
         super();
         this.setBackground(Color.lightGray);
         this.setLayout(new BorderLayout());
@@ -28,10 +30,10 @@ public class Toolbar extends JPanel {
         searchPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         searchPanel.setBackground(Color.lightGray);
 
-        searchBar = new JTextField("",40);
+        searchBar = new JTextField("", 40);
         searchButton = new JButton("", new ImageIcon("search-interface-symbol.png"));
         searchButton.addActionListener(buttonHandler);
-        searchButton.setToolTipText("Search" );
+        searchButton.setToolTipText("Search");
 
         searchPanel.add(searchBar);
         searchPanel.add(searchButton);
@@ -45,10 +47,12 @@ public class Toolbar extends JPanel {
         crudButtons.put("CreateQuotation", new ToolbarButton("Add Quotation", "add.png"));
         crudButtons.put("UpdateQuotation", new ToolbarButton("Edit Quotation", "edit.png"));
         crudButtons.put("DeleteQuotation", new ToolbarButton("Delete Quotation", "delete.png"));
+        crudButtons.put("ConvertToOrder", new ToolbarButton("Convert to Order", "convert.png"));
         crudButtons.put("CreateOrder", new ToolbarButton("Add Order", "add.png"));
         crudButtons.put("UpdateOrder", new ToolbarButton("Edit Order", "edit.png"));
+        crudButtons.put("DeleteOrder", new ToolbarButton("Delete Order", "delete.png"));
 
-        for(ToolbarButton button : crudButtons.values()){
+        for (ToolbarButton button : crudButtons.values()) {
             button.addActionListener(buttonHandler);
             crudButtonsPanel.add(button);
         }
@@ -57,20 +61,22 @@ public class Toolbar extends JPanel {
         this.add(crudButtonsPanel, BorderLayout.EAST);
     }
 
-    public void loadConfiguration(String tabName, Table table){
+    public void loadConfiguration(String tabName, Table table) {
         // Hide all crud buttons first
-        for(ToolbarButton toolbarButton : crudButtons.values())
+        for (ToolbarButton toolbarButton : crudButtons.values())
             toolbarButton.setVisible(false);
 
-        switch (tabName){
+        switch (tabName) {
             case "Quotation":
                 crudButtons.get("CreateQuotation").setVisible(true);
                 crudButtons.get("UpdateQuotation").setVisible(true);
                 crudButtons.get("DeleteQuotation").setVisible(true);
+                crudButtons.get("ConvertToOrder").setVisible(true);
                 break;
             case "Order":
                 crudButtons.get("CreateOrder").setVisible(true);
                 crudButtons.get("UpdateOrder").setVisible(true);
+                crudButtons.get("DeleteOrder").setVisible(true);
                 break;
             case "Bill":
                 break;
@@ -84,32 +90,121 @@ public class Toolbar extends JPanel {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             Object source = actionEvent.getSource();
-            if (source == searchButton){
+            if (source == searchButton) {
                 currentTable.filterByRegex(searchBar.getText());
-            }
-            else if (source == crudButtons.get("CreateQuotation")){
-                System.out.println("Create Quotation Button clicked!");
-            }
-            else if (source == crudButtons.get("UpdateQuotation")){
-                System.out.println("Update Quotation Button clicked!");
-            }
-            else if(source == crudButtons.get("DeleteQuotation")){
-                System.out.println("Delete Quotation Button clicked!");
-            }
-            else if(source == crudButtons.get("CreateOrder")){
-                System.out.println("Create Order Button clicked!");
-            }
-            else if(source == crudButtons.get("UpdateOrder")){
-                System.out.println("Update Order Button clicked!");
+            } else if (source == crudButtons.get("CreateQuotation")) {
+                new QuotationForm(null, currentTable).setVisible(true);
+            } else if (source == crudButtons.get("UpdateQuotation")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    // Get data from selected row
+                    Object[] rowData = new Object[currentTable.getColumnCount()];
+                    for (int i = 0; i < rowData.length; i++) {
+                        rowData[i] = currentTable.getValueAt(selectedRow, i);
+                    }
+                    new QuotationForm(rowData, currentTable).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select a quotation to edit",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (source == crudButtons.get("DeleteQuotation")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to delete this quotation?",
+                            "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        ((DefaultTableModel) currentTable.getModel()).removeRow(
+                                currentTable.convertRowIndexToModel(selectedRow));
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select a quotation to delete",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (source == crudButtons.get("ConvertToOrder")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                            "Convert this quotation to an order?",
+                            "Confirm Conversion", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        // Get the quotation data
+                        Object[] quotationData = new Object[currentTable.getColumnCount()];
+                        for (int i = 0; i < quotationData.length; i++) {
+                            quotationData[i] = currentTable.getValueAt(selectedRow, i);
+                        }
+
+                        // Create order data (replace quotation number with order number)
+                        Object[] orderData = quotationData.clone();
+                        orderData[0] = "ORD-" + quotationData[0].toString().replace("QUO-", "");
+
+                        // Get the order table and add the new order
+                        Window windowAncestor = SwingUtilities.getWindowAncestor(Toolbar.this);
+                        if (windowAncestor instanceof MainScreen) {
+                            MainScreen mainScreen = (MainScreen) windowAncestor;
+                            Table orderTable = mainScreen.getTabbedTablePane().getTableFromTab("Order");
+                            orderTable.addRow(orderData);
+
+                            // Optionally delete the quotation
+                            int deleteQuotation = JOptionPane.showConfirmDialog(null,
+                                    "Do you want to delete the original quotation?",
+                                    "Delete Original", JOptionPane.YES_NO_OPTION);
+                            if (deleteQuotation == JOptionPane.YES_OPTION) {
+                                ((DefaultTableModel) currentTable.getModel()).removeRow(
+                                        currentTable.convertRowIndexToModel(selectedRow));
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(null,
+                                    "Could not locate the main application window.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select a quotation to convert",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (source == crudButtons.get("CreateOrder")) {
+                new OrderForm(null, currentTable).setVisible(true);
+            } else if (source == crudButtons.get("UpdateOrder")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    // Get data from selected row
+                    Object[] rowData = new Object[currentTable.getColumnCount()];
+                    for (int i = 0; i < rowData.length; i++) {
+                        rowData[i] = currentTable.getValueAt(selectedRow, i);
+                    }
+                    new OrderForm(rowData, currentTable).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select an order to edit",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (source == crudButtons.get("DeleteOrder")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to delete this order?",
+                            "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        ((DefaultTableModel) currentTable.getModel()).removeRow(
+                                currentTable.convertRowIndexToModel(selectedRow));
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select an order to delete",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
             }
         }
     }
 
-    class ToolbarButton extends JButton{
-        public ToolbarButton(String tooltipText, String imagePath){
+    class ToolbarButton extends JButton {
+        public ToolbarButton(String tooltipText, String imagePath) {
             super("", new ImageIcon(imagePath));
             this.setToolTipText(tooltipText);
             this.setVisible(false);
+
+            // Set a consistent preferred size for all buttons
+            Dimension buttonSize = new Dimension(40, 40);
+            this.setPreferredSize(buttonSize);
         }
     }
 }

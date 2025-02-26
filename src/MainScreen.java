@@ -14,19 +14,21 @@ public class MainScreen extends JFrame {
     private Toolbar toolbar;
     private TabbedTablePane tabbedTablePane;
 
-    private final static String[] QUOTATION_TABLE_COLUMNS = {"QuotationNo", "ItemNo", "Qty", "Client Name", "Price", "Transport Costs", "Total Costs"};
-    private final static String[] ORDER_TABLE_COLUMNS = {"OrderNo", "ItemNo", "Qty", "Client Name", "Price", "Transport Costs", "Total Costs"};
-    private final static String[] BILL_TABLE_COLUMNS = {"BillNo","OrderNo","Client Name","Billing Price"};
+    private final static String[] QUOTATION_TABLE_COLUMNS = { "QuotationNo", "ItemNo", "Qty", "Client Name", "Price",
+            "Transport Costs", "Total Costs" };
+    private final static String[] ORDER_TABLE_COLUMNS = { "OrderNo", "ItemNo", "Qty", "Client Name", "Price",
+            "Transport Costs", "Total Costs" };
+    private final static String[] BILL_TABLE_COLUMNS = { "BillNo", "OrderNo", "Client Name", "Billing Price" };
 
-    public MainScreen(){
+    public MainScreen() {
         super("Order Screen");
         this.setSize(1000, 700);
         this.setLocationRelativeTo(null);
-        this.setLayout(new BorderLayout(0,0));
+        this.setLayout(new BorderLayout(0, 0));
 
         // Top
         topPanel = new JPanel();
-        topPanel.setBackground(new Color(0,102,204));
+        topPanel.setBackground(new Color(0, 102, 204));
         topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 7));
 
         applicationName = new JLabel("Textile Order Processing System");
@@ -37,7 +39,7 @@ public class MainScreen extends JFrame {
 
         // Main
         mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout(10,0));
+        mainPanel.setLayout(new BorderLayout(10, 0));
 
         // Create the toolbar
         toolbar = new Toolbar();
@@ -45,7 +47,7 @@ public class MainScreen extends JFrame {
         // Create a TabbedPane containing a table for every tab
         tabbedTablePane = new TabbedTablePane();
         tabbedTablePane.addChangeListener(new TabbedPaneListener());
-        tabbedTablePane.setBorder(new EmptyBorder(30,60,50,60)); // Padding
+        tabbedTablePane.setBorder(new EmptyBorder(30, 60, 50, 60)); // Padding
 
         // Initialise data in the tables
         tabbedTablePane.addTabbedTable("Quotation", QUOTATION_TABLE_COLUMNS);
@@ -53,7 +55,7 @@ public class MainScreen extends JFrame {
         tabbedTablePane.addTabbedTable("Bill", BILL_TABLE_COLUMNS);
 
         Table quotationTable = tabbedTablePane.getTableFromTab("Quotation");
-        quotationTable.addRow(new Object[]{"1","2","5","Charles", 2500, 700, 3200});
+        quotationTable.addRow(new Object[] { "1", "2", "5", "Charles", 2500, 700, 3200 });
 
         // Load the default configuration of the toolbar: Quotation
         toolbar.loadConfiguration("Quotation", tabbedTablePane.getTableFromTab("Quotation"));
@@ -76,5 +78,9 @@ public class MainScreen extends JFrame {
             // selectedTab E {Quotation, Order, Bill}
             toolbar.loadConfiguration(selectedTab, tabbedTablePane.getTableFromTab(selectedTab));
         }
+    }
+
+    public TabbedTablePane getTabbedTablePane() {
+        return tabbedTablePane;
     }
 }
