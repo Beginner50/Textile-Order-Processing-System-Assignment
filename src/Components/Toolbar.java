@@ -1,6 +1,5 @@
 package Components;
 
-import app.MainScreen;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -18,6 +17,7 @@ public class Toolbar extends JPanel {
     private JPanel crudButtonsPanel;
     private HashMap<String, ToolbarButton> crudButtons;
 
+    private Object[] orderFromQuotation;
     private Table currentTable;
 
     public Toolbar() {
@@ -62,7 +62,9 @@ public class Toolbar extends JPanel {
     }
 
     public void loadConfiguration(String tabName, Table table) {
-        // Hide all crud buttons first
+        currentTable = table;
+
+        // Hide all crud buttons
         for (ToolbarButton toolbarButton : crudButtons.values())
             toolbarButton.setVisible(false);
 
@@ -74,6 +76,10 @@ public class Toolbar extends JPanel {
                 crudButtons.get("ConvertToOrder").setVisible(true);
                 break;
             case "Order":
+                if(orderFromQuotation != null){
+                    currentTable.addRow(orderFromQuotation);
+                    orderFromQuotation = null;
+                }
                 crudButtons.get("CreateOrder").setVisible(true);
                 crudButtons.get("UpdateOrder").setVisible(true);
                 crudButtons.get("DeleteOrder").setVisible(true);
@@ -83,7 +89,6 @@ public class Toolbar extends JPanel {
             default:
                 break;
         }
-        currentTable = table;
     }
 
     class ButtonHandler implements ActionListener {
@@ -135,30 +140,22 @@ public class Toolbar extends JPanel {
                         }
 
                         // Create order data (replace quotation number with order number)
-                        Object[] orderData = quotationData.clone();
-                        orderData[0] = "ORD-" + quotationData[0].toString().replace("QUO-", "");
+                        orderFromQuotation = quotationData.clone();
+                        orderFromQuotation[0] = "ORD-" + quotationData[0].toString().replace("QUO-", "");
 
-                        // Get the order table and add the new order
-                        Window windowAncestor = SwingUtilities.getWindowAncestor(Toolbar.this);
-                        if (windowAncestor instanceof MainScreen) {
-                            MainScreen mainScreen = (MainScreen) windowAncestor;
-                            Table orderTable = mainScreen.getTabbedTablePane().getTableFromTab("Order");
-                            orderTable.addRow(orderData);
-
-                            // Optionally delete the quotation
-                            int deleteQuotation = JOptionPane.showConfirmDialog(null,
+                        // Optionally delete the quotation
+                        int deleteQuotation = JOptionPane.showConfirmDialog(null,
                                     "Do you want to delete the original quotation?",
                                     "Delete Original", JOptionPane.YES_NO_OPTION);
-                            if (deleteQuotation == JOptionPane.YES_OPTION) {
+                        if (deleteQuotation == JOptionPane.YES_OPTION) {
                                 ((DefaultTableModel) currentTable.getModel()).removeRow(
                                         currentTable.convertRowIndexToModel(selectedRow));
-                            }
+                        }
                         } else {
                             JOptionPane.showMessageDialog(null,
                                     "Could not locate the main application window.",
                                     "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "Please select a quotation to convert",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
