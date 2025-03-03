@@ -5,14 +5,14 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.util.EventObject;
 
-public class Table extends JTable {
+public class CustomTable extends JTable {
     private TableRowSorter<DefaultTableModel> sorter;
 
-    public Table(String[] columnNames){
+    public CustomTable(String[] columnNames) {
         this(new Object[][]{}, columnNames);
     }
 
-    public Table(Object[][] data, String[] columnNames){
+    public CustomTable(Object[][] data, String[] columnNames) {
         super(new DefaultTableModel(data, columnNames));
 
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -21,16 +21,16 @@ public class Table extends JTable {
         this.setRowSorter(sorter);
     }
 
-    public void addRow(Object[] data){
+    public void addRow(Object[] data) {
         DefaultTableModel model = (DefaultTableModel) this.getModel();
         model.addRow(data);
     }
 
-    public void filterByRegex(String regex){
-        if(regex == null || regex.trim().isEmpty())
+    public void filterByRegex(String regex) {
+        if (regex == null || regex.trim().isEmpty())
             sorter.setRowFilter(null);
         else
-            sorter.setRowFilter(RowFilter.regexFilter("(?i)" +regex)); // (?i) added for case insensitivity
+            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + regex)); // (?i) added for case insensitivity
     }
 
     @Override

@@ -2,78 +2,36 @@ package Components;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 
-public class Toolbar extends JPanel {
-    private ButtonHandler buttonHandler;
-
-    private JPanel searchPanel;
-    private JTextField searchBar;
-    private JButton searchButton;
-
-    private JPanel crudButtonsPanel;
-    private HashMap<String, ToolbarButton> crudButtons;
-
+public class ISAdminToolbar extends AbstractToolbar{
     private Object[] orderFromQuotation;
-    private Table currentTable;
+    private ButtonHandler crudButtonHandler;
 
-    public Toolbar() {
-        super();
-        this.setBackground(Color.lightGray);
-        this.setLayout(new BorderLayout());
-        buttonHandler = new ButtonHandler();
+    public ISAdminToolbar(){
+        crudButtonHandler = new ButtonHandler();
 
-        searchPanel = new JPanel();
-        searchPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        searchPanel.setBackground(Color.lightGray);
-
-        searchBar = new JTextField("", 40);
-        searchButton = new JButton("", new ImageIcon("search-interface-symbol.png"));
-        searchButton.addActionListener(buttonHandler);
-        searchButton.setToolTipText("Search");
-
-        searchPanel.add(searchBar);
-        searchPanel.add(searchButton);
-
-        crudButtonsPanel = new JPanel();
-        crudButtonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        crudButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        crudButtonsPanel.setBackground(Color.lightGray);
-
-        crudButtons = new HashMap<>();
-        crudButtons.put("CreateQuotation", new ToolbarButton("Add Quotation", "add.png"));
-        crudButtons.put("UpdateQuotation", new ToolbarButton("Edit Quotation", "edit.png"));
-        crudButtons.put("DeleteQuotation", new ToolbarButton("Delete Quotation", "delete.png"));
-        crudButtons.put("ConvertToOrder", new ToolbarButton("Convert to Order", "convert.png"));
-        crudButtons.put("CreateOrder", new ToolbarButton("Add Order", "add.png"));
-        crudButtons.put("UpdateOrder", new ToolbarButton("Edit Order", "edit.png"));
-        crudButtons.put("DeleteOrder", new ToolbarButton("Delete Order", "delete.png"));
-
-        for (ToolbarButton button : crudButtons.values()) {
-            button.addActionListener(buttonHandler);
-            crudButtonsPanel.add(button);
-        }
-
-        this.add(searchPanel, BorderLayout.WEST);
-        this.add(crudButtonsPanel, BorderLayout.EAST);
+        this.addCrudButton("CreateQuotation", ButtonFactory.createButton("Add Quotation", "add.png"), crudButtonHandler);
+        this.addCrudButton("UpdateQuotation", ButtonFactory.createButton("Edit Quotation", "edit.png"), crudButtonHandler);
+        this.addCrudButton("DeleteQuotation", ButtonFactory.createButton("Delete Quotation", "delete.png"), crudButtonHandler);
+        this.addCrudButton("ConvertQuotation", ButtonFactory.createButton("Convert to Order", "convert.png"), crudButtonHandler);
+        this.addCrudButton("CreateOrder", ButtonFactory.createButton("Add Order", "add.png"), crudButtonHandler);
+        this.addCrudButton("UpdateOrder", ButtonFactory.createButton("Edit Order", "edit.png"), crudButtonHandler);
+        this.addCrudButton("DeleteOrder", ButtonFactory.createButton("Delete Order", "delete.png"), crudButtonHandler);
     }
 
-    public void loadConfiguration(String tabName, Table table) {
-        currentTable = table;
-
-        // Hide all crud buttons
-        for (ToolbarButton toolbarButton : crudButtons.values())
-            toolbarButton.setVisible(false);
+    @Override
+    public void loadConfiguration(String tabName, CustomTable table) {
+        super.loadConfiguration(tabName, table);
 
         switch (tabName) {
             case "Quotation":
                 crudButtons.get("CreateQuotation").setVisible(true);
                 crudButtons.get("UpdateQuotation").setVisible(true);
                 crudButtons.get("DeleteQuotation").setVisible(true);
-                crudButtons.get("ConvertToOrder").setVisible(true);
+                crudButtons.get("ConvertQuotation").setVisible(true);
                 break;
             case "Order":
                 if(orderFromQuotation != null){
@@ -95,9 +53,7 @@ public class Toolbar extends JPanel {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             Object source = actionEvent.getSource();
-            if (source == searchButton) {
-                currentTable.filterByRegex(searchBar.getText());
-            } else if (source == crudButtons.get("CreateQuotation")) {
+            if (source == crudButtons.get("CreateQuotation")) {
                 new QuotationForm(null, currentTable).setVisible(true);
             } else if (source == crudButtons.get("UpdateQuotation")) {
                 int selectedRow = currentTable.getSelectedRow();
@@ -126,7 +82,7 @@ public class Toolbar extends JPanel {
                     JOptionPane.showMessageDialog(null, "Please select a quotation to delete",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
-            } else if (source == crudButtons.get("ConvertToOrder")) {
+            } else if (source == crudButtons.get("ConvertQuotation")) {
                 int selectedRow = currentTable.getSelectedRow();
                 if (selectedRow != -1) {
                     int confirm = JOptionPane.showConfirmDialog(null,
@@ -145,17 +101,17 @@ public class Toolbar extends JPanel {
 
                         // Optionally delete the quotation
                         int deleteQuotation = JOptionPane.showConfirmDialog(null,
-                                    "Do you want to delete the original quotation?",
-                                    "Delete Original", JOptionPane.YES_NO_OPTION);
+                                "Do you want to delete the original quotation?",
+                                "Delete Original", JOptionPane.YES_NO_OPTION);
                         if (deleteQuotation == JOptionPane.YES_OPTION) {
-                                ((DefaultTableModel) currentTable.getModel()).removeRow(
-                                        currentTable.convertRowIndexToModel(selectedRow));
+                            ((DefaultTableModel) currentTable.getModel()).removeRow(
+                                    currentTable.convertRowIndexToModel(selectedRow));
                         }
-                        } else {
-                            JOptionPane.showMessageDialog(null,
-                                    "Could not locate the main application window.",
-                                    "Error", JOptionPane.ERROR_MESSAGE);
-                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                                "Could not locate the main application window.",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "Please select a quotation to convert",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
@@ -190,18 +146,6 @@ public class Toolbar extends JPanel {
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
             }
-        }
-    }
-
-    class ToolbarButton extends JButton {
-        public ToolbarButton(String tooltipText, String imagePath) {
-            super("", new ImageIcon(imagePath));
-            this.setToolTipText(tooltipText);
-            this.setVisible(false);
-
-            // Set a consistent preferred size for all buttons
-            Dimension buttonSize = new Dimension(40, 40);
-            this.setPreferredSize(buttonSize);
         }
     }
 }

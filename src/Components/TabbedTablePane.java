@@ -10,16 +10,16 @@ public class TabbedTablePane extends JTabbedPane {
         tabbedTables = new HashMap<>();
     }
 
-    public Table getTableFromTab(String tabName){
+    public CustomTable getTableFromTab(String tabName){
         return tabbedTables.get(tabName).table;
     }
 
-    public void setTableInTab(String tabName, Table table){
+    public void setTableInTab(String tabName, CustomTable table){
         tabbedTables.get(tabName).table = table;
     }
 
     public void addTabbedTable(String tabName, String[] columns){
-        tabbedTables.put(tabName, new TabbedTable(new Table(columns)));
+        tabbedTables.put(tabName, new TabbedTable(new CustomTable(columns)));
         this.add(tabName, tabbedTables.get(tabName));
     }
 
@@ -30,11 +30,12 @@ public class TabbedTablePane extends JTabbedPane {
     }
 
     class TabbedTable extends JScrollPane{
-        public Table table;
+        public CustomTable table;
 
-        public TabbedTable(Table table){
+        public TabbedTable(CustomTable table){
             super(table);
             this.table = table;
         }
     }
 }
+

@@ -62,8 +62,8 @@ public class LoginScreen extends JFrame {
 
             if (username.equals("admin") && password.equals("password")) {
                 dispose(); // Close login screen
-                MainScreen mainScreen = new MainScreen(); //Opens the main application window
-                mainScreen.setVisible(true);
+                ISAdminScreen isAdminScreen = new ISAdminScreen(); //Opens the main application window
+                isAdminScreen.setVisible(true);
             } else {
                 // Show Error Message
                 statusLabel.setText("Invalid username or password!");
