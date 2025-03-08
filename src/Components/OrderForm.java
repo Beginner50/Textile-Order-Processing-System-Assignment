@@ -18,11 +18,11 @@ public class OrderForm extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
-    private CustomTable parentTable;
+    private Table parentTable;
     private Object[] editData;
     private boolean isEditMode;
 
-    public OrderForm(Object[] data, CustomTable parentTable) {
+    public OrderForm(Object[] data, Table parentTable) {
         this.parentTable = parentTable;
         this.editData = data;
         this.isEditMode = (data != null);
@@ -195,7 +195,7 @@ public class OrderForm extends JDialog {
                 return;
             }
 
-            CustomTable billTable = tabbedPane.getTableFromTab("Bill");
+            Table billTable = tabbedPane.getTableFromTab("Bill");
 
             // Create bill data
             String billNo = "BILL-" + System.currentTimeMillis() % 10000;

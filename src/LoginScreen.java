@@ -2,13 +2,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+
 //LoginScreen class
 public class LoginScreen extends JFrame {
 
+    private final Connection conn;
     private final JLabel statusLabel; // Declare statusLabel at class level
 
     //constructor for  login screen
-    public LoginScreen() {
+    public LoginScreen(Connection conn) {
+        this.conn = conn;
         setTitle("Login");
         setSize(400, 250);
         setLocationRelativeTo(null);
@@ -62,7 +66,7 @@ public class LoginScreen extends JFrame {
 
             if (username.equals("admin") && password.equals("password")) {
                 dispose(); // Close login screen
-                ISAdminScreen isAdminScreen = new ISAdminScreen(); //Opens the main application window
+                ISAdminScreen isAdminScreen = new ISAdminScreen(conn); //Opens the main application window
                 isAdminScreen.setVisible(true);
             } else {
                 // Show Error Message

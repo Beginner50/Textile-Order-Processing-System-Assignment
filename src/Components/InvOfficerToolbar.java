@@ -1,6 +1,5 @@
 package Components;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -13,7 +12,7 @@ public class InvOfficerToolbar extends AbstractToolbar {
     }
 
     @Override
-    public void loadConfiguration(String tabName, CustomTable table) {
+    public void loadConfiguration(String tabName, Table table) {
         super.loadConfiguration(tabName, table);
 
         switch (tabName){

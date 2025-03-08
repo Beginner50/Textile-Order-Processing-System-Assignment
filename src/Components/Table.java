@@ -5,14 +5,14 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.util.EventObject;
 
-public class CustomTable extends JTable {
+public class Table extends JTable {
     private TableRowSorter<DefaultTableModel> sorter;
 
-    public CustomTable(String[] columnNames) {
+    public Table(String[] columnNames) {
         this(new Object[][]{}, columnNames);
     }
 
-    public CustomTable(Object[][] data, String[] columnNames) {
+    public Table(Object[][] data, String[] columnNames) {
         super(new DefaultTableModel(data, columnNames));
 
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

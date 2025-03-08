@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
 
 public class ISAdminToolbar extends AbstractToolbar{
     private Object[] orderFromQuotation;
@@ -23,7 +22,7 @@ public class ISAdminToolbar extends AbstractToolbar{
     }
 
     @Override
-    public void loadConfiguration(String tabName, CustomTable table) {
+    public void loadConfiguration(String tabName, Table table) {
         super.loadConfiguration(tabName, table);
 
         switch (tabName) {

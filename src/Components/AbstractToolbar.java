@@ -1,7 +1,6 @@
 package Components;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,7 +16,7 @@ public abstract class AbstractToolbar extends JPanel {
     private JPanel crudButtonsPanel;
     protected HashMap<String, JButton> crudButtons;
 
-    protected CustomTable currentTable;
+    protected Table currentTable;
 
     public AbstractToolbar() {
         super();
@@ -53,7 +52,7 @@ public abstract class AbstractToolbar extends JPanel {
         this.add(crudButtonsPanel, BorderLayout.EAST);
     }
 
-    public void loadConfiguration(String tabName, CustomTable table){
+    public void loadConfiguration(String tabName, Table table){
         currentTable = table;
 
         // Hide all crud buttons
@@ -67,11 +66,11 @@ public abstract class AbstractToolbar extends JPanel {
         button.addActionListener(buttonHandler);
     }
 
-    public CustomTable getCurrentTable() {
+    public Table getCurrentTable() {
         return currentTable;
     }
 
-    public void setCurrentTable(CustomTable currentTable) {
+    public void setCurrentTable(Table currentTable) {
         this.currentTable = currentTable;
     }
 

@@ -18,11 +18,11 @@ public class QuotationForm extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
-    private CustomTable parentTable;
+    private Table parentTable;
     private Object[] editData;
     private boolean isEditMode;
 
-    public QuotationForm(Object[] data, CustomTable parentTable) {
+    public QuotationForm(Object[] data, Table parentTable) {
         this.parentTable = parentTable;
         this.editData = data;
         this.isEditMode = (data != null);
