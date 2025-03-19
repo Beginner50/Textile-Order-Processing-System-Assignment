@@ -4,10 +4,10 @@ import java.sql.*;
 public class Application{
     public static void main(String[] args) {
         //     url -> "jdbc:mysql://hostname:dbms_port/database"
-        String url = "jdbc:mysql://localhost:3306/order_processing_system";
-        Connection conn;
+//        String url = "jdbc:mysql://localhost:3306/order_processing_system";
+        Connection conn = null;
         try{
-            conn = DriverManager.getConnection(url);
+//            conn = DriverManager.getConnection(url);
 //            conn.createStatement().execute("show tables;");
 
             ToolTipManager.sharedInstance().setInitialDelay(200); // Set tooltip delay
