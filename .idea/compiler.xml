@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="23">
       <module name="OrderProcessingSystem.buildSrc" target="21" />
       <module name="OrderProcessingSystem.buildSrc.main" target="21" />
       <module name="OrderProcessingSystem.buildSrc.test" target="21" />
