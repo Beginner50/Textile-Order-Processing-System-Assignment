@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component jdk="23" jdk_type="JavaSDK">
+<component inherit-compiler-output="true" inheritJdk="true">
 	<contentEntry url="file://$MODULE_DIR$"/>
+	<lib name="mysql-connector-j-9.2.0.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/mysql-connector-j-9.2.0.jar!/"/>
+	</lib>
 </component>
