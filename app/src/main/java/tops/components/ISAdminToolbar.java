@@ -16,7 +16,7 @@ public class ISAdminToolbar extends AbstractToolbar{
         this.addCrudButton("UpdateQuotation", ButtonFactory.createButton("Edit Quotation", "edit.png"), crudButtonHandler);
         this.addCrudButton("DeleteQuotation", ButtonFactory.createButton("Delete Quotation", "delete.png"), crudButtonHandler);
         this.addCrudButton("ConvertQuotation", ButtonFactory.createButton("Convert to Order", "convert.png"), crudButtonHandler);
-//        this.addCrudButton("CreateOrder", ButtonFactory.createButton("Add Order", "add.png"), crudButtonHandler);
+        this.addCrudButton("CreateOrder", ButtonFactory.createButton("Add Order", "add.png"), crudButtonHandler);
         this.addCrudButton("UpdateOrder", ButtonFactory.createButton("Edit Order", "edit.png"), crudButtonHandler);
 //        this.addCrudButton("DeleteOrder", ButtonFactory.createButton("Delete Order", "delete.png"), crudButtonHandler);
     }
@@ -37,7 +37,7 @@ public class ISAdminToolbar extends AbstractToolbar{
                     currentTable.addRow(orderFromQuotation);
                     orderFromQuotation = null;
                 }
-//                crudButtons.get("CreateOrder").setVisible(true);
+                crudButtons.get("CreateOrder").setVisible(true);
                 crudButtons.get("UpdateOrder").setVisible(true);
 //                crudButtons.get("DeleteOrder").setVisible(true);
                 break;
@@ -118,9 +118,9 @@ public class ISAdminToolbar extends AbstractToolbar{
                     JOptionPane.showMessageDialog(null, "Please select a quotation to convert",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
-
-//            } else if (source == crudButtons.get("CreateOrder")) {
-//                new OrderForm(null, currentTable).setVisible(true);
+            }
+            else if (source == crudButtons.get("CreateOrder")) {
+                new OrderForm(null, currentTable).setVisible(true);
             }
             else if (source == crudButtons.get("UpdateOrder")) {
                 int selectedRow = currentTable.getSelectedRow();
