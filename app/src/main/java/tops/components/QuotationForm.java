@@ -11,8 +11,8 @@ public class QuotationForm extends JDialog {
     private JComboBox<String> itemNoField;
     private JSpinner qtySpinner;
     private JTextField clientNameField;
-    private JFormattedTextField priceField;
-    private JFormattedTextField transportCostsField;
+    private JTextField priceField;
+    private JTextField transportCostsField;
     private JTextField totalCostsField;
 
     private JButton saveButton;
@@ -21,11 +21,17 @@ public class QuotationForm extends JDialog {
     private Table parentTable;
     private Object[] editData;
     private boolean isEditMode;
+    private int editRowIndex; // New field to store the row index
 
     public QuotationForm(Object[] data, Table parentTable) {
+        this(data, parentTable, -1); // Default constructor calls the new one with -1 index
+    }
+
+    public QuotationForm(Object[] data, Table parentTable, int rowIndex) {
         this.parentTable = parentTable;
         this.editData = data;
         this.isEditMode = (data != null);
+        this.editRowIndex = rowIndex; // Store the row index
 
         setTitle(isEditMode ? "Edit Quotation" : "Create Quotation");
         setSize(400, 400);
@@ -49,7 +55,7 @@ public class QuotationForm extends JDialog {
         formPanel.add(quotationNoField);
 
         formPanel.add(new JLabel("Item No:"));
-        String[] items = { "Item 1", "Item 2", "Item 3" }; // Example items
+        String[] items = { "Item A", "Item B", "Item C" }; // Example items
         itemNoField = new JComboBox<>(items);
         if (isEditMode)
             itemNoField.setSelectedItem(data[1].toString());
@@ -132,6 +138,15 @@ public class QuotationForm extends JDialog {
                 return;
             }
 
+            // Validate quotation number format
+            if (!quotationNoField.getText().trim().startsWith("QUO-")) {
+                JOptionPane.showMessageDialog(this,
+                        "Quotation number must start with 'QUO-'",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             // Parse numeric values
             int qty = (int) qtySpinner.getValue();
             double price = Double.parseDouble(priceField.getText().trim());
@@ -150,11 +165,10 @@ public class QuotationForm extends JDialog {
             };
 
             if (isEditMode) {
-                // Update existing row
-                int selectedRow = parentTable.getSelectedRow();
+                // Update existing row - use stored row index instead of current selection
                 DefaultTableModel model = (DefaultTableModel) parentTable.getModel();
                 for (int i = 0; i < rowData.length; i++) {
-                    model.setValueAt(rowData[i], parentTable.convertRowIndexToModel(selectedRow), i);
+                    model.setValueAt(rowData[i], parentTable.convertRowIndexToModel(editRowIndex), i);
                 }
             } else {
                 // Add new row
@@ -165,7 +179,7 @@ public class QuotationForm extends JDialog {
 
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this,
-                    "Please enter valid numeric values for Quantity, Price, and Transport Costs",
+                    "Please enter valid numeric values for Price and Transport Costs",
                     "Input Error",
                     JOptionPane.ERROR_MESSAGE);
         }

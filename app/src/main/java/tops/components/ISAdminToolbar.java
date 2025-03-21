@@ -58,6 +58,7 @@ public class ISAdminToolbar extends AbstractToolbar {
         public void actionPerformed(ActionEvent actionEvent) {
             Object source = actionEvent.getSource();
             if (source == crudButtons.get("CreateQuotation")) {
+                // Pass null for new quotations
                 new QuotationForm(null, currentTable).setVisible(true);
             } else if (source == crudButtons.get("UpdateQuotation")) {
                 int selectedRow = currentTable.getSelectedRow();
@@ -67,7 +68,8 @@ public class ISAdminToolbar extends AbstractToolbar {
                     for (int i = 0; i < rowData.length; i++) {
                         rowData[i] = currentTable.getValueAt(selectedRow, i);
                     }
-                    new UpdateQuotation(rowData, currentTable).setVisible(true);
+                    // Pass the row index to the QuotationForm constructor
+                    new QuotationForm(rowData, currentTable, selectedRow).setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(null, "Please select a quotation to edit",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
