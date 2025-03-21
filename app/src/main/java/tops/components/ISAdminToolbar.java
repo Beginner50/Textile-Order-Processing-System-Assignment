@@ -5,20 +5,25 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ISAdminToolbar extends AbstractToolbar{
+public class ISAdminToolbar extends AbstractToolbar {
     private Object[] orderFromQuotation;
     private ButtonHandler crudButtonHandler;
 
-    public ISAdminToolbar(){
+    public ISAdminToolbar() {
         crudButtonHandler = new ButtonHandler();
 
-        this.addCrudButton("CreateQuotation", ButtonFactory.createButton("Add Quotation", "add.png"), crudButtonHandler);
-        this.addCrudButton("UpdateQuotation", ButtonFactory.createButton("Edit Quotation", "edit.png"), crudButtonHandler);
-        this.addCrudButton("DeleteQuotation", ButtonFactory.createButton("Delete Quotation", "delete.png"), crudButtonHandler);
-        this.addCrudButton("ConvertQuotation", ButtonFactory.createButton("Convert to Order", "convert.png"), crudButtonHandler);
+        this.addCrudButton("CreateQuotation", ButtonFactory.createButton("Add Quotation", "add.png"),
+                crudButtonHandler);
+        this.addCrudButton("UpdateQuotation", ButtonFactory.createButton("Edit Quotation", "edit.png"),
+                crudButtonHandler);
+        this.addCrudButton("DeleteQuotation", ButtonFactory.createButton("Delete Quotation", "delete.png"),
+                crudButtonHandler);
+        this.addCrudButton("ConvertQuotation", ButtonFactory.createButton("Convert to Order", "convert.png"),
+                crudButtonHandler);
         this.addCrudButton("CreateOrder", ButtonFactory.createButton("Add Order", "add.png"), crudButtonHandler);
         this.addCrudButton("UpdateOrder", ButtonFactory.createButton("Edit Order", "edit.png"), crudButtonHandler);
-//        this.addCrudButton("DeleteOrder", ButtonFactory.createButton("Delete Order", "delete.png"), crudButtonHandler);
+        // this.addCrudButton("DeleteOrder", ButtonFactory.createButton("Delete Order",
+        // "delete.png"), crudButtonHandler);
     }
 
     @Override
@@ -33,13 +38,13 @@ public class ISAdminToolbar extends AbstractToolbar{
                 crudButtons.get("ConvertQuotation").setVisible(true);
                 break;
             case "Order":
-                if(orderFromQuotation != null){
+                if (orderFromQuotation != null) {
                     currentTable.addRow(orderFromQuotation);
                     orderFromQuotation = null;
                 }
                 crudButtons.get("CreateOrder").setVisible(true);
                 crudButtons.get("UpdateOrder").setVisible(true);
-//                crudButtons.get("DeleteOrder").setVisible(true);
+                // crudButtons.get("DeleteOrder").setVisible(true);
                 break;
             case "Bill":
                 break;
@@ -54,8 +59,7 @@ public class ISAdminToolbar extends AbstractToolbar{
             Object source = actionEvent.getSource();
             if (source == crudButtons.get("CreateQuotation")) {
                 new QuotationForm(null, currentTable).setVisible(true);
-            }
-            else if (source == crudButtons.get("UpdateQuotation")) {
+            } else if (source == crudButtons.get("UpdateQuotation")) {
                 int selectedRow = currentTable.getSelectedRow();
                 if (selectedRow != -1) {
                     // Get data from selected row
@@ -63,13 +67,12 @@ public class ISAdminToolbar extends AbstractToolbar{
                     for (int i = 0; i < rowData.length; i++) {
                         rowData[i] = currentTable.getValueAt(selectedRow, i);
                     }
-                    new QuotationForm(rowData, currentTable).setVisible(true);
+                    new UpdateQuotation(rowData, currentTable).setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(null, "Please select a quotation to edit",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
-            }
-            else if (source == crudButtons.get("DeleteQuotation")) {
+            } else if (source == crudButtons.get("DeleteQuotation")) {
                 int selectedRow = currentTable.getSelectedRow();
                 if (selectedRow != -1) {
                     int confirm = JOptionPane.showConfirmDialog(null,
@@ -83,8 +86,7 @@ public class ISAdminToolbar extends AbstractToolbar{
                     JOptionPane.showMessageDialog(null, "Please select a quotation to delete",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
-            }
-            else if (source == crudButtons.get("ConvertQuotation")) {
+            } else if (source == crudButtons.get("ConvertQuotation")) {
                 int selectedRow = currentTable.getSelectedRow();
                 if (selectedRow != -1) {
                     int confirm = JOptionPane.showConfirmDialog(null,
@@ -118,11 +120,9 @@ public class ISAdminToolbar extends AbstractToolbar{
                     JOptionPane.showMessageDialog(null, "Please select a quotation to convert",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
-            }
-            else if (source == crudButtons.get("CreateOrder")) {
+            } else if (source == crudButtons.get("CreateOrder")) {
                 new OrderForm(null, currentTable).setVisible(true);
-            }
-            else if (source == crudButtons.get("UpdateOrder")) {
+            } else if (source == crudButtons.get("UpdateOrder")) {
                 int selectedRow = currentTable.getSelectedRow();
                 if (selectedRow != -1) {
                     // Get data from selected row
@@ -136,21 +136,20 @@ public class ISAdminToolbar extends AbstractToolbar{
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
             }
-//            } else if (source == crudButtons.get("DeleteOrder")) {
-//                int selectedRow = currentTable.getSelectedRow();
-//                if (selectedRow != -1) {
-//                    int confirm = JOptionPane.showConfirmDialog(null,
-//                            "Are you sure you want to delete this order?",
-//                            "Confirm Deletion", JOptionPane.YES_NO_OPTION);
-//                    if (confirm == JOptionPane.YES_OPTION) {
-//                        ((DefaultTableModel) currentTable.getModel()).removeRow(
-//                                currentTable.convertRowIndexToModel(selectedRow));
-//                    }
-                else {
-                    JOptionPane.showMessageDialog(null, "Please select an order to delete",
-                            "No Selection", JOptionPane.WARNING_MESSAGE);
-                }
+            // } else if (source == crudButtons.get("DeleteOrder")) {
+            // int selectedRow = currentTable.getSelectedRow();
+            // if (selectedRow != -1) {
+            // int confirm = JOptionPane.showConfirmDialog(null,
+            // "Are you sure you want to delete this order?",
+            // "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+            // if (confirm == JOptionPane.YES_OPTION) {
+            // ((DefaultTableModel) currentTable.getModel()).removeRow(
+            // currentTable.convertRowIndexToModel(selectedRow));
+            // }
+            else {
+                JOptionPane.showMessageDialog(null, "Please select an order to delete",
+                        "No Selection", JOptionPane.WARNING_MESSAGE);
             }
         }
+    }
 }
-
