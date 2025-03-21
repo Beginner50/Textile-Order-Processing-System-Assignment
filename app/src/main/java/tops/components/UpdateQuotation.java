@@ -6,99 +6,84 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class UpdateQuotation extends JDialog {
-    private JTextField quotationNoField;
-    private JComboBox<String> itemNoField;
-    private JSpinner qtySpinner;
-    private JTextField clientNameField;
-    private JFormattedTextField priceField;
-    private JFormattedTextField transportCostsField;
-    private JTextField totalCostsField;
+public class UpdateQuotation extends JFrame {
+    private Table table;
+    private Object[] rowData;
+    private JTextField quotationNoField, itemNoField, qtyField, clientNameField, priceField, transportCostsField;
+    private JLabel totalCostsLabel;
 
-    private JButton saveButton;
-    private JButton cancelButton;
+    public UpdateQuotation(Object[] rowData, Table table) {
+        this.rowData = rowData;
+        this.table = table;
 
-    private Table parentTable;
-    private Object[] editData;
-    private boolean isEditMode;
-
-    public UpdateQuotation(Object[] data, Table parentTable) {
-        this.parentTable = parentTable;
-        this.editData = data;
-        this.isEditMode = (data != null);
-
-        setTitle(isEditMode ? "Update Quotation" : "Create Quotation");
-        setSize(400, 400);
+        setTitle("Edit Quotation");
+        setSize(400, 300);
         setLocationRelativeTo(null);
-        setModal(true);
         setLayout(new BorderLayout());
 
         // Form panel
         JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 10));
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        // Add form fields with data from rowData
         formPanel.add(new JLabel("Quotation No:"));
-        quotationNoField = new JTextField();
-        if (isEditMode) {
-            quotationNoField.setText(data[0].toString());
-            quotationNoField.setEditable(false);
-        } else {
-            quotationNoField.setText("QUO-" + System.currentTimeMillis() % 10000);
-        }
+        quotationNoField = new JTextField(rowData[0].toString());
         formPanel.add(quotationNoField);
 
         formPanel.add(new JLabel("Item No:"));
-        String[] items = { "Item 1", "Item 2", "Item 3" }; // Example items
-        itemNoField = new JComboBox<>(items);
-        if (isEditMode)
-            itemNoField.setSelectedItem(data[1].toString());
+        itemNoField = new JTextField(rowData[1].toString());
         formPanel.add(itemNoField);
 
         formPanel.add(new JLabel("Quantity:"));
-        qtySpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
-        if (isEditMode)
-            qtySpinner.setValue(data[2]);
-        formPanel.add(qtySpinner);
+        qtyField = new JTextField(rowData[2].toString());
+        formPanel.add(qtyField);
 
         formPanel.add(new JLabel("Client Name:"));
-        clientNameField = new JTextField();
-        if (isEditMode)
-            clientNameField.setText(data[3].toString());
+        clientNameField = new JTextField(rowData[3].toString());
         formPanel.add(clientNameField);
 
         formPanel.add(new JLabel("Price:"));
-        priceField = new JFormattedTextField();
-        priceField.setColumns(10);
-        if (isEditMode)
-            priceField.setText(data[4].toString());
+        priceField = new JTextField(rowData[4].toString());
         formPanel.add(priceField);
 
         formPanel.add(new JLabel("Transport Costs:"));
-        transportCostsField = new JFormattedTextField();
-        transportCostsField.setColumns(10);
-        if (isEditMode)
-            transportCostsField.setText(data[5].toString());
+        transportCostsField = new JTextField(rowData[5].toString());
         formPanel.add(transportCostsField);
 
         formPanel.add(new JLabel("Total Costs:"));
-        totalCostsField = new JTextField();
-        if (isEditMode)
-            totalCostsField.setText(data[6].toString());
-        totalCostsField.setEditable(false);
-        formPanel.add(totalCostsField);
+        totalCostsLabel = new JLabel(rowData[6].toString());
+        formPanel.add(totalCostsLabel);
 
         // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
 
-        saveButton = new JButton("Save");
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveQuotation();
+                // Calculate total costs
+                double price = Double.parseDouble(priceField.getText());
+                double transportCosts = Double.parseDouble(transportCostsField.getText());
+                double totalCosts = price + transportCosts;
+
+                // Get the selected row
+                int selectedRow = table.getSelectedRow();
+
+                // Update the table data
+                table.setValueAt(quotationNoField.getText(), selectedRow, 0);
+                table.setValueAt(itemNoField.getText(), selectedRow, 1);
+                table.setValueAt(qtyField.getText(), selectedRow, 2);
+                table.setValueAt(clientNameField.getText(), selectedRow, 3);
+                table.setValueAt(price, selectedRow, 4);
+                table.setValueAt(transportCosts, selectedRow, 5);
+                table.setValueAt(totalCosts, selectedRow, 6);
+
+                // Close the form
+                dispose();
             }
         });
 
-        cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -109,64 +94,10 @@ public class UpdateQuotation extends JDialog {
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
 
-        // Add panels to dialog
+        // Add panels to frame
         add(formPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
-    }
 
-    private void saveQuotation() {
-        try {
-            // Validate inputs
-            if (quotationNoField.getText().trim().isEmpty() ||
-                    itemNoField.getSelectedItem() == null ||
-                    (int) qtySpinner.getValue() <= 0 ||
-                    clientNameField.getText().trim().isEmpty() ||
-                    priceField.getText().trim().isEmpty() ||
-                    transportCostsField.getText().trim().isEmpty()) {
-
-                JOptionPane.showMessageDialog(this,
-                        "All fields are required",
-                        "Validation Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Parse numeric values
-            int qty = (int) qtySpinner.getValue();
-            double price = Double.parseDouble(priceField.getText().trim());
-            double transportCosts = Double.parseDouble(transportCostsField.getText().trim());
-            double totalCosts = price + transportCosts;
-
-            // Create data array
-            Object[] rowData = {
-                    quotationNoField.getText().trim(),
-                    itemNoField.getSelectedItem().toString(),
-                    qty,
-                    clientNameField.getText().trim(),
-                    price,
-                    transportCosts,
-                    totalCosts
-            };
-
-            // Update existing row
-            if (isEditMode) {
-                int selectedRow = parentTable.getSelectedRow();
-                DefaultTableModel model = (DefaultTableModel) parentTable.getModel();
-                for (int i = 0; i < rowData.length; i++) {
-                    model.setValueAt(rowData[i], parentTable.convertRowIndexToModel(selectedRow), i);
-                }
-            } else {
-                // Add new row
-                parentTable.addRow(rowData);
-            }
-
-            dispose();
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Please enter valid numeric values for Quantity, Price, and Transport Costs",
-                    "Input Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 }
