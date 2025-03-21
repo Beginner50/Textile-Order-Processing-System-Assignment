@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 //LoginScreen class
 public class LoginScreen extends JFrame {
@@ -13,8 +14,8 @@ public class LoginScreen extends JFrame {
     private final JLabel statusLabel; // Declare statusLabel at class level
 
     //constructor for  login screen
-    public LoginScreen(Connection conn) {
-        this.conn = conn;
+    public LoginScreen() throws SQLException {
+        this.conn = DatabaseConnection.getConnection();
         setTitle("Login");
         setSize(400, 250);
         setLocationRelativeTo(null);
@@ -68,7 +69,12 @@ public class LoginScreen extends JFrame {
 
             if (username.equals("admin") && password.equals("password")) {
                 dispose(); // Close login screen
-                ISAdminScreen isAdminScreen = new ISAdminScreen(conn); //Opens the main application window
+                ISAdminScreen isAdminScreen = null; //Opens the main application window
+                try {
+                    isAdminScreen = new ISAdminScreen();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 isAdminScreen.setVisible(true);
             } else {
                 // Show Error Message

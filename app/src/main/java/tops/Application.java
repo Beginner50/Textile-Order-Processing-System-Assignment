@@ -6,17 +6,11 @@ import java.sql.*;
 public class Application {
     public static void main(String[] args) throws ClassNotFoundException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        // url -> "jdbc:mysql://hostname:dbms_port/database"
-        String url = "jdbc:mysql://localhost:3306/textileorderprocessing";
-        String user = "root"; // Add your username here
-        String password = ""; // Add your password here
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection(url, user, password);
-            conn.createStatement().execute("show tables;");
+            Connection conn = DatabaseConnection.getConnection();
 
             ToolTipManager.sharedInstance().setInitialDelay(200); // Set tooltip delay
-            LoginScreen loginScreen = new LoginScreen(conn);
+            LoginScreen loginScreen = new LoginScreen();
             loginScreen.setVisible(true);
 
             conn.close();

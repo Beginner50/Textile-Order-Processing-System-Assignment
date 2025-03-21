@@ -48,6 +48,10 @@ public class ISAdminToolbar extends AbstractToolbar {
                 break;
             case "Bill":
                 break;
+            case "Customer":
+                break;
+            case "TransportCharges":
+                break;
             default:
                 break;
         }
@@ -105,14 +109,8 @@ public class ISAdminToolbar extends AbstractToolbar {
                         orderFromQuotation = quotationData.clone();
                         orderFromQuotation[0] = "ORD-" + quotationData[0].toString().replace("QUO-", "");
 
-                        // Optionally delete the quotation
-                        int deleteQuotation = JOptionPane.showConfirmDialog(null,
-                                "Do you want to delete the original quotation?",
-                                "Delete Original", JOptionPane.YES_NO_OPTION);
-                        if (deleteQuotation == JOptionPane.YES_OPTION) {
-                            ((DefaultTableModel) currentTable.getModel()).removeRow(
-                                    currentTable.convertRowIndexToModel(selectedRow));
-                        }
+                        // Delete the quotation
+                        ((DefaultTableModel) currentTable.getModel()).removeRow(currentTable.convertRowIndexToModel(selectedRow));
                     } else {
                         JOptionPane.showMessageDialog(null,
                                 "Could not locate the main application window.",
