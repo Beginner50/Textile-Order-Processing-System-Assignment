@@ -8,11 +8,11 @@ import java.awt.event.ActionListener;
 
 public class QuotationForm extends JDialog {
     private JTextField quotationNoField;
-    private JTextField itemNoField;
-    private JTextField qtyField;
+    private JComboBox<String> itemNoField;
+    private JSpinner qtySpinner;
     private JTextField clientNameField;
-    private JTextField priceField;
-    private JTextField transportCostsField;
+    private JFormattedTextField priceField;
+    private JFormattedTextField transportCostsField;
     private JTextField totalCostsField;
 
     private JButton saveButton;
@@ -49,16 +49,17 @@ public class QuotationForm extends JDialog {
         formPanel.add(quotationNoField);
 
         formPanel.add(new JLabel("Item No:"));
-        itemNoField = new JTextField();
+        String[] items = { "Item 1", "Item 2", "Item 3" }; // Example items
+        itemNoField = new JComboBox<>(items);
         if (isEditMode)
-            itemNoField.setText(data[1].toString());
+            itemNoField.setSelectedItem(data[1].toString());
         formPanel.add(itemNoField);
 
         formPanel.add(new JLabel("Quantity:"));
-        qtyField = new JTextField();
+        qtySpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
         if (isEditMode)
-            qtyField.setText(data[2].toString());
-        formPanel.add(qtyField);
+            qtySpinner.setValue(data[2]);
+        formPanel.add(qtySpinner);
 
         formPanel.add(new JLabel("Client Name:"));
         clientNameField = new JTextField();
@@ -67,13 +68,15 @@ public class QuotationForm extends JDialog {
         formPanel.add(clientNameField);
 
         formPanel.add(new JLabel("Price:"));
-        priceField = new JTextField();
+        priceField = new JFormattedTextField();
+        priceField.setColumns(10);
         if (isEditMode)
             priceField.setText(data[4].toString());
         formPanel.add(priceField);
 
         formPanel.add(new JLabel("Transport Costs:"));
-        transportCostsField = new JTextField();
+        transportCostsField = new JFormattedTextField();
+        transportCostsField.setColumns(10);
         if (isEditMode)
             transportCostsField.setText(data[5].toString());
         formPanel.add(transportCostsField);
@@ -116,8 +119,8 @@ public class QuotationForm extends JDialog {
         try {
             // Validate inputs
             if (quotationNoField.getText().trim().isEmpty() ||
-                    itemNoField.getText().trim().isEmpty() ||
-                    qtyField.getText().trim().isEmpty() ||
+                    itemNoField.getSelectedItem() == null ||
+                    (int) qtySpinner.getValue() <= 0 ||
                     clientNameField.getText().trim().isEmpty() ||
                     priceField.getText().trim().isEmpty() ||
                     transportCostsField.getText().trim().isEmpty()) {
@@ -130,7 +133,7 @@ public class QuotationForm extends JDialog {
             }
 
             // Parse numeric values
-            int qty = Integer.parseInt(qtyField.getText().trim());
+            int qty = (int) qtySpinner.getValue();
             double price = Double.parseDouble(priceField.getText().trim());
             double transportCosts = Double.parseDouble(transportCostsField.getText().trim());
             double totalCosts = price + transportCosts;
@@ -138,7 +141,7 @@ public class QuotationForm extends JDialog {
             // Create data array
             Object[] rowData = {
                     quotationNoField.getText().trim(),
-                    itemNoField.getText().trim(),
+                    itemNoField.getSelectedItem().toString(),
                     qty,
                     clientNameField.getText().trim(),
                     price,
