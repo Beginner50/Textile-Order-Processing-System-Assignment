@@ -22,8 +22,10 @@ public class ISAdminToolbar extends AbstractToolbar {
                 crudButtonHandler);
         this.addCrudButton("CreateOrder", ButtonFactory.createButton("Add Order", "add.png"), crudButtonHandler);
         this.addCrudButton("UpdateOrder", ButtonFactory.createButton("Edit Order", "edit.png"), crudButtonHandler);
-        // this.addCrudButton("DeleteOrder", ButtonFactory.createButton("Delete Order",
-        // "delete.png"), crudButtonHandler);
+        this.addCrudButton("CreateCustomer", ButtonFactory.createButton("Add Customer", "add.png"), crudButtonHandler);
+        this.addCrudButton("UpdateCustomer", ButtonFactory.createButton("Edit Customer", "edit.png"), crudButtonHandler);
+        this.addCrudButton("CreateTransportCharge", ButtonFactory.createButton("Add Transport Charge", "add.png"), crudButtonHandler);
+        this.addCrudButton("UpdateTransportCharge", ButtonFactory.createButton("Edit Transport Charge", "edit.png"), crudButtonHandler);
     }
 
     @Override
@@ -31,26 +33,29 @@ public class ISAdminToolbar extends AbstractToolbar {
         super.loadConfiguration(tabName, table);
 
         switch (tabName) {
-            case "Quotation":
+            case "Quotations":
                 crudButtons.get("CreateQuotation").setVisible(true);
                 crudButtons.get("UpdateQuotation").setVisible(true);
                 crudButtons.get("DeleteQuotation").setVisible(true);
                 crudButtons.get("ConvertQuotation").setVisible(true);
                 break;
-            case "Order":
+            case "Orders":
                 if (orderFromQuotation != null) {
                     currentTable.addRow(orderFromQuotation);
                     orderFromQuotation = null;
                 }
                 crudButtons.get("CreateOrder").setVisible(true);
                 crudButtons.get("UpdateOrder").setVisible(true);
-                // crudButtons.get("DeleteOrder").setVisible(true);
                 break;
-            case "Bill":
+            case "Bills":
                 break;
-            case "Customer":
+            case "Customers":
+                crudButtons.get("CreateCustomer").setVisible(true);
+                crudButtons.get("UpdateCustomer").setVisible(true);
                 break;
             case "TransportCharges":
+                crudButtons.get("CreateTransportCharge").setVisible(true);
+                crudButtons.get("UpdateTransportCharge").setVisible(true);
                 break;
             default:
                 break;

@@ -13,7 +13,7 @@ public class ISAdminScreen extends AbstractCustomScreen{
     private final Connection conn;
     private final static String[] QUOTATION_TABLE_COLUMNS = { "QuotationNo", "ItemNo", "CustomerId", "Quantity", "Transport Costs", "Item Costs", "Total Costs", "Date Created"};
     private final static String[] ORDER_TABLE_COLUMNS = { "OrderNo", "ItemNo", "CustomerId", "Quantity", "Transport Costs", "Item Costs", "Total Costs", "Order Date", "Status" };
-//    private final static String[] BILL_TABLE_COLUMNS = { "BillNo", "OrderNo", "CustomerId", "Billing Price" };
+    private final static String[] BILL_TABLE_COLUMNS = { "BillNo", "OrderNo", "Billing Price", "Status" };
     private final static String[] TRANSPORT_CHARGES_TABLE_COLUMNS = { "TransportId", "Transport Name", "Cost Per Distance"  };
     private final static String[] CUSTOMER_TABLE_COLUMNS = { "CustomerId", "Customer Name", "Address", "Contact"  };
 
@@ -24,23 +24,25 @@ public class ISAdminScreen extends AbstractCustomScreen{
         this.setToolbar(new ISAdminToolbar());
 
         // Initialise data in the tables
-        tabbedTablePane.addTabbedTable("Quotation", QUOTATION_TABLE_COLUMNS);
-        tabbedTablePane.addTabbedTable("Order", ORDER_TABLE_COLUMNS);
-//        tabbedTablePane.addTabbedTable("Bill", BILL_TABLE_COLUMNS);
-        tabbedTablePane.addTabbedTable("Customer", CUSTOMER_TABLE_COLUMNS);
+        tabbedTablePane.addTabbedTable("Quotations", QUOTATION_TABLE_COLUMNS);
+        tabbedTablePane.addTabbedTable("Orders", ORDER_TABLE_COLUMNS);
+        tabbedTablePane.addTabbedTable("Bills", BILL_TABLE_COLUMNS);
+        tabbedTablePane.addTabbedTable("Customers", CUSTOMER_TABLE_COLUMNS);
         tabbedTablePane.addTabbedTable("TransportCharges", TRANSPORT_CHARGES_TABLE_COLUMNS);
 
         // Populate the tables with data
         populateTables();
 
         // Load the default configuration of the toolbar: Quotation
-        toolbar.loadConfiguration("Quotation", tabbedTablePane.getTableFromTab("Quotation"));
+        toolbar.loadConfiguration("Quotations", tabbedTablePane.getTableFromTab("Quotations"));
     }
 
     public void populateTables() {
         populateQuotationTable();
 
         populateOrderTable();
+
+        populateBillTable();
 
         populateCustomerTable();
 
@@ -64,7 +66,7 @@ public class ISAdminScreen extends AbstractCustomScreen{
                         rs.getDouble("total_costs"),
                         rs.getDate("date_created")
                 };
-                tabbedTablePane.getTableFromTab("Quotation").addRow(row);
+                tabbedTablePane.getTableFromTab("Quotations").addRow(row);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -89,9 +91,30 @@ public class ISAdminScreen extends AbstractCustomScreen{
                         rs.getDate("order_date"),
                         rs.getString("status")
                 };
-                tabbedTablePane.getTableFromTab("Order").addRow(row);
+                tabbedTablePane.getTableFromTab("Orders").addRow(row);
             }
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void populateBillTable(){
+        String query = "SELECT BillNo, OrderNo, billing_price, status FROM Bills";
+
+        try(Statement stmt = conn.createStatement()){
+            ResultSet rs = stmt.executeQuery(query);
+
+            while(rs.next()){
+                Object[] row = {
+                    rs.getInt("BillNo"),
+                    rs.getInt("OrderNo"),
+                    rs.getDouble("billing_price"),
+                    rs.getString("status")
+                };
+                tabbedTablePane.getTableFromTab("Bills").addRow(row);
+            }
+        }
+        catch (SQLException e){
             e.printStackTrace();
         }
     }
@@ -109,7 +132,7 @@ public class ISAdminScreen extends AbstractCustomScreen{
                         rs.getString("address"),
                         rs.getString("contact")
                 };
-                tabbedTablePane.getTableFromTab("Customer").addRow(row);
+                tabbedTablePane.getTableFromTab("Customers").addRow(row);
             }
         } catch (SQLException e) {
             e.printStackTrace();
