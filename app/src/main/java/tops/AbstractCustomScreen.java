@@ -1,7 +1,6 @@
 package tops;
 
-import tops.components.*;
-import tops.components.AbstractToolbar;
+import tops.components.Toolbar;
 import tops.components.TabbedTablePane;
 
 import javax.swing.*;
@@ -16,7 +15,7 @@ public abstract class AbstractCustomScreen extends JFrame {
 
     private JPanel mainPanel;
 
-    protected AbstractToolbar toolbar;
+    protected Toolbar toolbar;
     protected TabbedTablePane tabbedTablePane;
 
     public AbstractCustomScreen() {
@@ -40,6 +39,10 @@ public abstract class AbstractCustomScreen extends JFrame {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(10, 0));
 
+        // Create and add the toolbar
+        toolbar = new Toolbar();
+        mainPanel.add(toolbar, BorderLayout.NORTH);
+
         // Create a TabbedPane containing a table for every tab
         tabbedTablePane = new TabbedTablePane();
         tabbedTablePane.addChangeListener(new TabbedPaneListener());
@@ -51,15 +54,6 @@ public abstract class AbstractCustomScreen extends JFrame {
         this.add(mainPanel);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    }
-
-    public void setToolbar(AbstractToolbar toolbar){
-        this.toolbar = toolbar;
-        mainPanel.add(toolbar, BorderLayout.NORTH);
-    }
-
-    public AbstractToolbar getToolbar(){
-        return toolbar;
     }
 
     class TabbedPaneListener implements ChangeListener {
