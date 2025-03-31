@@ -12,8 +12,8 @@ public class InvOfficerScreen extends AbstractCustomScreen{
     private final Connection conn;
     private final static String[] ITEM_TABLE_COLUMNS = {"ItemNo", "Description", "Unit Price", "QtyInStock"};
 
-    public InvOfficerScreen() throws SQLException {
-        this.conn = DatabaseConnection.getConnection();
+    public InvOfficerScreen(Connection conn) {
+        this.conn = conn;
 
         ButtonHandler buttonHandler = new ButtonHandler();
         toolbar.addTabButton("Items","UpdateItemStock", ButtonFactory.createButton("Update item stock level", "edit.png"), buttonHandler);

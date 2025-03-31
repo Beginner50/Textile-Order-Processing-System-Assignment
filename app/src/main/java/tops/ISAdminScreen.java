@@ -19,8 +19,8 @@ public class ISAdminScreen extends AbstractCustomScreen{
     private final static String[] TRANSPORT_CHARGES_TABLE_COLUMNS = { "TransportId", "Transport Name", "Cost Per Distance"  };
     private final static String[] CUSTOMER_TABLE_COLUMNS = { "CustomerId", "Customer Name", "Address", "Contact"  };
 
-    public ISAdminScreen() throws SQLException {
-        this.conn = DatabaseConnection.getConnection();
+    public ISAdminScreen(Connection conn) {
+        this.conn = conn;
 
         // Create and add all the tables by their tabs
         tabbedTablePane.addTabbedTable("Quotations", QUOTATION_TABLE_COLUMNS);

@@ -14,8 +14,8 @@ public class LoginScreen extends JFrame {
     private final JLabel statusLabel; // Declare statusLabel at class level
 
     //constructor for  login screen
-    public LoginScreen() throws SQLException {
-        this.conn = DatabaseConnection.getConnection();
+    public LoginScreen(Connection conn){
+        this.conn = conn;
         setTitle("Login");
         setSize(400, 250);
         setLocationRelativeTo(null);
@@ -70,11 +70,7 @@ public class LoginScreen extends JFrame {
             if (username.equals("admin") && password.equals("password")) {
                 dispose(); // Close login screen
                 ISAdminScreen isAdminScreen = null; //Opens the main application window
-                try {
-                    isAdminScreen = new ISAdminScreen();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                isAdminScreen = new ISAdminScreen(conn);
                 isAdminScreen.setVisible(true);
             } else {
                 // Show Error Message

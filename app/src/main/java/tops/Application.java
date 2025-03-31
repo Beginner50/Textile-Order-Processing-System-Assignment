@@ -10,10 +10,8 @@ public class Application {
             Connection conn = DatabaseConnection.getConnection();
 
             ToolTipManager.sharedInstance().setInitialDelay(200); // Set tooltip delay
-            LoginScreen loginScreen = new LoginScreen();
+            LoginScreen loginScreen = new LoginScreen(conn);
             loginScreen.setVisible(true);
-
-            conn.close();
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }
