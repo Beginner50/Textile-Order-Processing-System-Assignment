@@ -17,12 +17,18 @@ public class LoginScreen extends JFrame {
     public LoginScreen(Connection conn){
         this.conn = conn;
         setTitle("Login");
-        setSize(400, 250);
+        setSize(400, 300); // Increased height to accommodate role selector
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(4, 1));
+        setLayout(new GridLayout(5, 1)); // Changed to 5 rows to add role selector
 
-        //JPanel
+        // Role Selection Panel
+        JPanel rolePanel = new JPanel();
+        rolePanel.add(new JLabel("Role: "));
+        String[] roles = {"Admin", "Inventory Officer"};
+        JComboBox<String> roleComboBox = new JComboBox<>(roles);
+        rolePanel.add(roleComboBox);
+
         // Username Field
         JPanel usernamePanel = new JPanel();
         usernamePanel.add(new JLabel("Username: "));
@@ -42,10 +48,11 @@ public class LoginScreen extends JFrame {
         statusLabel = new JLabel("", SwingConstants.CENTER); //Initially empty ("") because no error message is shown at the start
         statusLabel.setForeground(Color.RED);
         // Adds an action listener to handle button clicks.
-        // Pass only usernameField and passwordField
-        loginButton.addActionListener(new LoginAction(usernameField, passwordField));
+        // Pass roleComboBox, usernameField and passwordField
+        loginButton.addActionListener(new LoginAction(usernameField, passwordField, roleComboBox));
 
         //Add the components(panel,button,label) to the frame
+        add(rolePanel);
         add(usernamePanel);
         add(passwordPanel);
         add(loginButton);
@@ -55,10 +62,12 @@ public class LoginScreen extends JFrame {
     class LoginAction implements ActionListener {
         private final JTextField usernameField;
         private final JPasswordField passwordField;
+        private final JComboBox<String> roleComboBox;
     //Constructor for LoginAction
-        public LoginAction(JTextField usernameField, JPasswordField passwordField) {
+        public LoginAction(JTextField usernameField, JPasswordField passwordField, JComboBox<String> roleComboBox) {
             this.usernameField = usernameField;
             this.passwordField = passwordField;
+            this.roleComboBox = roleComboBox;
         }
 
         @Override
@@ -66,17 +75,27 @@ public class LoginScreen extends JFrame {
         public void actionPerformed(ActionEvent event) {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
+            String selectedRole = (String) roleComboBox.getSelectedItem();
 
-            if (username.equals("admin") && password.equals("password")) {
-                dispose(); // Close login screen
-                ISAdminScreen isAdminScreen = null; //Opens the main application window
-                isAdminScreen = new ISAdminScreen(conn);
-                isAdminScreen.setVisible(true);
-            } else {
-                // Show Error Message
-                statusLabel.setText("Invalid username or password!");
-                statusLabel.setForeground(Color.RED);
-
+            // Check credentials based on role
+            if (selectedRole.equals("Admin")) {
+                if (username.equals("admin") && password.equals("password")) {
+                    dispose(); // Close login screen
+                    ISAdminScreen isAdminScreen = new ISAdminScreen(conn);
+                    isAdminScreen.setVisible(true);
+                } else {
+                    statusLabel.setText("Invalid admin credentials!");
+                    statusLabel.setForeground(Color.RED);
+                }
+            } else if (selectedRole.equals("Inventory Officer")) {
+                if (username.equals("officer") && password.equals("password2")) {
+                    dispose(); // Close login screen
+                    InventoryOfficerScreen officerScreen = new InventoryOfficerScreen(conn);
+                    officerScreen.setVisible(true);
+                } else {
+                    statusLabel.setText("Invalid inventory officer credentials!");
+                    statusLabel.setForeground(Color.RED);
+                }
             }
         }
     }

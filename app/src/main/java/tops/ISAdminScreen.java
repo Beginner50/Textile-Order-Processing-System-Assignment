@@ -7,9 +7,11 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.awt.BorderLayout;
 
 public class ISAdminScreen extends AbstractCustomScreen{
     private final Connection conn;
@@ -39,8 +41,10 @@ public class ISAdminScreen extends AbstractCustomScreen{
         toolbar.addTabButton("Orders","UpdateOrder", ButtonFactory.createButton("Edit Order", "edit.png"), buttonHandler);
         toolbar.addTabButton("Customers","CreateCustomer", ButtonFactory.createButton("Add Customer", "add.png"), buttonHandler);
         toolbar.addTabButton("Customers","UpdateCustomer", ButtonFactory.createButton("Edit Customer", "edit.png"), buttonHandler);
+        toolbar.addTabButton("Customers","DeleteCustomer", ButtonFactory.createButton("Delete Customer", "delete.png"), buttonHandler);
         toolbar.addTabButton("TransportCharges","CreateTransportCharge", ButtonFactory.createButton("Add Transport Charge", "add.png"), buttonHandler);
         toolbar.addTabButton("TransportCharges","UpdateTransportCharge", ButtonFactory.createButton("Edit Transport Charge", "edit.png"), buttonHandler);
+        toolbar.addTabButton("TransportCharges","DeleteTransportCharge", ButtonFactory.createButton("Delete Transport Charge", "delete.png"), buttonHandler);
 
         // Populate the tables with data
         populateTables();
@@ -140,24 +144,187 @@ public class ISAdminScreen extends AbstractCustomScreen{
                     JOptionPane.showMessageDialog(null, "Please select an order to edit",
                             "No Selection", JOptionPane.WARNING_MESSAGE);
                 }
-            }
-            // } else if (source == crudButtons.get("DeleteOrder")) {
-            // int selectedRow = currentTable.getSelectedRow();
-            // if (selectedRow != -1) {
-            // int confirm = JOptionPane.showConfirmDialog(null,
-            // "Are you sure you want to delete this order?",
-            // "Confirm Deletion", JOptionPane.YES_NO_OPTION);
-            // if (confirm == JOptionPane.YES_OPTION) {
-            // ((DefaultTableModel) currentTable.getModel()).removeRow(
-            // currentTable.convertRowIndexToModel(selectedRow));
-            // }
-            else {
-                JOptionPane.showMessageDialog(null, "Please select an order to delete",
+            } else if (source == toolbar.getTabButton("CreateCustomer")) {
+                new CustomerForm(conn, null, currentTable, ISAdminScreen.this).setVisible(true);
+            } else if (source == toolbar.getTabButton("UpdateCustomer")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    // Get data from selected row
+                    Object[] rowData = new Object[currentTable.getColumnCount()];
+                    for (int i = 0; i < rowData.length; i++) {
+                        rowData[i] = currentTable.getValueAt(selectedRow, i);
+                    }
+                    new CustomerForm(conn, rowData, currentTable, ISAdminScreen.this).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select a customer to edit",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (source == toolbar.getTabButton("DeleteCustomer")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to delete this customer?",
+                            "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        int customerId = Integer.parseInt(currentTable.getValueAt(selectedRow, 0).toString());
+                        
+                        try {
+                            // Delete the customer from the database
+                            String query = "DELETE FROM Customers WHERE CustomerId = ?";
+                            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                                stmt.setInt(1, customerId);
+                                int rowsAffected = stmt.executeUpdate();
+                                
+                                if (rowsAffected > 0) {
+                                    // If successful, remove from the table model
+                                    ((DefaultTableModel) currentTable.getModel()).removeRow(
+                                            currentTable.convertRowIndexToModel(selectedRow));
+                                    
+                                    JOptionPane.showMessageDialog(null, 
+                                            "Customer deleted successfully", 
+                                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                                } else {
+                                    JOptionPane.showMessageDialog(null, 
+                                            "Failed to delete customer. The record may no longer exist.", 
+                                            "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            
+                            if (e.getMessage().contains("foreign key constraint")) {
+                                JOptionPane.showMessageDialog(null,
+                                        "Cannot delete this customer because it is referenced by existing orders or quotations.",
+                                        "Constraint Error", JOptionPane.ERROR_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(null,
+                                        "Database error: " + e.getMessage(),
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select a customer to delete",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (source == toolbar.getTabButton("CreateTransportCharge")) {
+                new TransportChargeForm(conn, null, currentTable, ISAdminScreen.this).setVisible(true);
+            } else if (source == toolbar.getTabButton("UpdateTransportCharge")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    // Get data from selected row
+                    Object[] rowData = new Object[currentTable.getColumnCount()];
+                    for (int i = 0; i < rowData.length; i++) {
+                        rowData[i] = currentTable.getValueAt(selectedRow, i);
+                    }
+                    new TransportChargeForm(conn, rowData, currentTable, ISAdminScreen.this).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select a transport charge to edit",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (source == toolbar.getTabButton("DeleteTransportCharge")) {
+                int selectedRow = currentTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to delete this transport charge?",
+                            "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        int transportId = Integer.parseInt(currentTable.getValueAt(selectedRow, 0).toString());
+                        
+                        try {
+                            // Delete the transport charge from the database
+                            String query = "DELETE FROM Transport_Charges WHERE TransportId = ?";
+                            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                                stmt.setInt(1, transportId);
+                                int rowsAffected = stmt.executeUpdate();
+                                
+                                if (rowsAffected > 0) {
+                                    // If successful, remove from the table model
+                                    ((DefaultTableModel) currentTable.getModel()).removeRow(
+                                            currentTable.convertRowIndexToModel(selectedRow));
+                                    
+                                    JOptionPane.showMessageDialog(null, 
+                                            "Transport charge deleted successfully", 
+                                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                                } else {
+                                    JOptionPane.showMessageDialog(null, 
+                                            "Failed to delete transport charge. The record may no longer exist.", 
+                                            "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            
+                            if (e.getMessage().contains("foreign key constraint")) {
+                                JOptionPane.showMessageDialog(null,
+                                        "Cannot delete this transport charge because it is referenced by existing orders or quotations.",
+                                        "Constraint Error", JOptionPane.ERROR_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(null,
+                                        "Database error: " + e.getMessage(),
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please select a transport charge to delete",
+                            "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select an item to delete",
                         "No Selection", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
 
+    // These methods need to be public so they can be called from the forms
+    public void populateCustomerTable() {
+        String query = "SELECT CustomerId, name, address, contact FROM Customers";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            // Clear the table first
+            DefaultTableModel model = (DefaultTableModel) tabbedTablePane.getTableFromTab("Customers").getModel();
+            model.setRowCount(0);
+
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getInt("CustomerId"),
+                        rs.getString("name"),
+                        rs.getString("address"),
+                        rs.getString("contact")
+                };
+                tabbedTablePane.getTableFromTab("Customers").addRow(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void populateTransportChargesTable() {
+        String query = "SELECT TransportId, transport_name, charge_per_distance FROM Transport_Charges";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            // Clear the table first
+            DefaultTableModel model = (DefaultTableModel) tabbedTablePane.getTableFromTab("TransportCharges").getModel();
+            model.setRowCount(0);
+
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getInt("TransportId"),
+                        rs.getString("transport_name"),
+                        rs.getDouble("charge_per_distance")
+                };
+                tabbedTablePane.getTableFromTab("TransportCharges").addRow(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
     private void populateQuotationTable() {
         String query = "SELECT QuotationNo, ItemNo, CustomerId, quantity, transport_costs, item_costs, total_costs, date_created FROM Quotations";
 
@@ -228,42 +395,11 @@ public class ISAdminScreen extends AbstractCustomScreen{
         }
     }
 
-    private void populateCustomerTable() {
-        String query = "SELECT CustomerId, name, address, contact FROM Customers";
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
-            while (rs.next()) {
-                Object[] row = {
-                        rs.getInt("CustomerId"),
-                        rs.getString("name"),
-                        rs.getString("address"),
-                        rs.getString("contact")
-                };
-                tabbedTablePane.getTableFromTab("Customers").addRow(row);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void populateTransportChargesTable() {
-        String query = "SELECT TransportId, transport_name, charge_per_distance FROM Transport_Charges";
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
-            while (rs.next()) {
-                Object[] row = {
-                        rs.getInt("TransportId"),
-                        rs.getString("transport_name"),
-                        rs.getDouble("charge_per_distance")
-                };
-                tabbedTablePane.getTableFromTab("TransportCharges").addRow(row);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    /**
+     * Get the database connection
+     * @return the database connection object
+     */
+    public Connection getConnection() {
+        return conn;
     }
 }
