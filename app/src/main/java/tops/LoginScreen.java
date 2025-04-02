@@ -13,8 +13,8 @@ public class LoginScreen extends JFrame {
     private final Connection conn;
     private final JLabel statusLabel; // Declare statusLabel at class level
 
-    //constructor for  login screen
-    public LoginScreen(Connection conn){
+    // constructor for login screen
+    public LoginScreen(Connection conn) {
         this.conn = conn;
         setTitle("Login");
         setSize(400, 300); // Increased height to accommodate role selector
@@ -25,7 +25,7 @@ public class LoginScreen extends JFrame {
         // Role Selection Panel
         JPanel rolePanel = new JPanel();
         rolePanel.add(new JLabel("Role: "));
-        String[] roles = {"Admin", "Inventory Officer"};
+        String[] roles = { "Admin", "Inventory Officer" };
         JComboBox<String> roleComboBox = new JComboBox<>(roles);
         rolePanel.add(roleComboBox);
 
@@ -45,25 +45,28 @@ public class LoginScreen extends JFrame {
         JButton loginButton = new JButton("Login");
 
         // Initialize statusLabel
-        statusLabel = new JLabel("", SwingConstants.CENTER); //Initially empty ("") because no error message is shown at the start
+        statusLabel = new JLabel("", SwingConstants.CENTER); // Initially empty ("") because no error message is shown
+                                                             // at the start
         statusLabel.setForeground(Color.RED);
         // Adds an action listener to handle button clicks.
         // Pass roleComboBox, usernameField and passwordField
         loginButton.addActionListener(new LoginAction(usernameField, passwordField, roleComboBox));
 
-        //Add the components(panel,button,label) to the frame
+        // Add the components(panel,button,label) to the frame
         add(rolePanel);
         add(usernamePanel);
         add(passwordPanel);
         add(loginButton);
         add(statusLabel);
     }
-//LoginAction class implements ActionListener so it responds to button clicks.
+
+    // LoginAction class implements ActionListener so it responds to button clicks.
     class LoginAction implements ActionListener {
         private final JTextField usernameField;
         private final JPasswordField passwordField;
         private final JComboBox<String> roleComboBox;
-    //Constructor for LoginAction
+
+        // Constructor for LoginAction
         public LoginAction(JTextField usernameField, JPasswordField passwordField, JComboBox<String> roleComboBox) {
             this.usernameField = usernameField;
             this.passwordField = passwordField;
@@ -79,7 +82,7 @@ public class LoginScreen extends JFrame {
 
             // Check credentials based on role
             if (selectedRole.equals("Admin")) {
-                if (username.equals("") && password.equals("")) {
+                if (username.equals("admin") && password.equals("password")) {
                     dispose(); // Close login screen
                     ISAdminScreen isAdminScreen = new ISAdminScreen(conn);
                     isAdminScreen.setVisible(true);
