@@ -19,13 +19,16 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
-public class ISAdminScreen extends AbstractCustomScreen{
+public class ISAdminScreen extends AbstractCustomScreen {
     private final Connection conn;
-    private final static String[] QUOTATION_TABLE_COLUMNS = { "QuotationNo", "ItemNo", "CustomerId", "Quantity", "Transport Costs", "Item Costs", "Total Costs", "Date Created"};
-    private final static String[] ORDER_TABLE_COLUMNS = { "OrderNo", "ItemNo", "CustomerId", "Quantity", "Transport Costs", "Item Costs", "Total Costs", "Order Date", "Status" };
+    private final static String[] QUOTATION_TABLE_COLUMNS = { "QuotationNo", "ItemNo", "CustomerId", "Quantity",
+            "Transport Costs", "Item Costs", "Total Costs", "Date Created" };
+    private final static String[] ORDER_TABLE_COLUMNS = { "OrderNo", "ItemNo", "CustomerId", "Quantity",
+            "Transport Costs", "Item Costs", "Total Costs", "Order Date", "Status" };
     private final static String[] BILL_TABLE_COLUMNS = { "BillNo", "OrderNo", "Billing Price", "Status" };
-    private final static String[] TRANSPORT_CHARGES_TABLE_COLUMNS = { "TransportId", "Transport Name", "Cost Per Distance"  };
-    private final static String[] CUSTOMER_TABLE_COLUMNS = { "CustomerId", "Customer Name", "Address", "Contact"  };
+    private final static String[] TRANSPORT_CHARGES_TABLE_COLUMNS = { "TransportId", "Transport Name",
+            "Cost Per Distance" };
+    private final static String[] CUSTOMER_TABLE_COLUMNS = { "CustomerId", "Customer Name", "Address", "Contact" };
 
     public ISAdminScreen(Connection conn) {
         this.conn = conn;
@@ -39,18 +42,30 @@ public class ISAdminScreen extends AbstractCustomScreen{
 
         // Create and add the toolbar buttons by their tabs
         ButtonHandler buttonHandler = new ButtonHandler();
-        toolbar.addTabButton("Quotations", "CreateQuotation", ButtonFactory.createButton("Add Quotation", "add.png"), buttonHandler);
-        toolbar.addTabButton("Quotations","UpdateQuotation", ButtonFactory.createButton("Edit Quotation", "edit.png"), buttonHandler);
-        toolbar.addTabButton("Quotations","DeleteQuotation", ButtonFactory.createButton("Delete Quotation", "delete.png"), buttonHandler);
-        toolbar.addTabButton("Quotations","ConvertQuotation", ButtonFactory.createButton("Convert to Order", "convert.png"), buttonHandler);
-        toolbar.addTabButton("Orders","CreateOrder", ButtonFactory.createButton("Add Order", "add.png"), buttonHandler);
-        toolbar.addTabButton("Orders","UpdateOrder", ButtonFactory.createButton("Edit Order", "edit.png"), buttonHandler);
-        toolbar.addTabButton("Customers","CreateCustomer", ButtonFactory.createButton("Add Customer", "add.png"), buttonHandler);
-        toolbar.addTabButton("Customers","UpdateCustomer", ButtonFactory.createButton("Edit Customer", "edit.png"), buttonHandler);
-        toolbar.addTabButton("Customers","DeleteCustomer", ButtonFactory.createButton("Delete Customer", "delete.png"), buttonHandler);
-        toolbar.addTabButton("TransportCharges","CreateTransportCharge", ButtonFactory.createButton("Add Transport Charge", "add.png"), buttonHandler);
-        toolbar.addTabButton("TransportCharges","UpdateTransportCharge", ButtonFactory.createButton("Edit Transport Charge", "edit.png"), buttonHandler);
-        toolbar.addTabButton("TransportCharges","DeleteTransportCharge", ButtonFactory.createButton("Delete Transport Charge", "delete.png"), buttonHandler);
+        toolbar.addTabButton("Quotations", "CreateQuotation", ButtonFactory.createButton("Add Quotation", "add.png"),
+                buttonHandler);
+        toolbar.addTabButton("Quotations", "UpdateQuotation", ButtonFactory.createButton("Edit Quotation", "edit.png"),
+                buttonHandler);
+        toolbar.addTabButton("Quotations", "DeleteQuotation",
+                ButtonFactory.createButton("Delete Quotation", "delete.png"), buttonHandler);
+        toolbar.addTabButton("Quotations", "ConvertQuotation",
+                ButtonFactory.createButton("Convert to Order", "convert.png"), buttonHandler);
+        toolbar.addTabButton("Orders", "CreateOrder", ButtonFactory.createButton("Add Order", "add.png"),
+                buttonHandler);
+        toolbar.addTabButton("Orders", "UpdateOrder", ButtonFactory.createButton("Edit Order", "edit.png"),
+                buttonHandler);
+        toolbar.addTabButton("Customers", "CreateCustomer", ButtonFactory.createButton("Add Customer", "add.png"),
+                buttonHandler);
+        toolbar.addTabButton("Customers", "UpdateCustomer", ButtonFactory.createButton("Edit Customer", "edit.png"),
+                buttonHandler);
+        toolbar.addTabButton("Customers", "DeleteCustomer", ButtonFactory.createButton("Delete Customer", "delete.png"),
+                buttonHandler);
+        toolbar.addTabButton("TransportCharges", "CreateTransportCharge",
+                ButtonFactory.createButton("Add Transport Charge", "add.png"), buttonHandler);
+        toolbar.addTabButton("TransportCharges", "UpdateTransportCharge",
+                ButtonFactory.createButton("Edit Transport Charge", "edit.png"), buttonHandler);
+        toolbar.addTabButton("TransportCharges", "DeleteTransportCharge",
+                ButtonFactory.createButton("Delete Transport Charge", "delete.png"), buttonHandler);
 
         // Populate the tables with data
         populateTables();
@@ -76,8 +91,8 @@ public class ISAdminScreen extends AbstractCustomScreen{
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             // Quotations Table Variables
-            int quotationNo ,itemNo ,customerId ,quantity;
-            double transport_costs, item_costs, total_costs ;
+            int quotationNo, itemNo, customerId, quantity;
+            double transport_costs, item_costs, total_costs;
             LocalDate date = null;
             quotationNo = itemNo = customerId = quantity = 0;
             transport_costs = item_costs = total_costs = 0;
@@ -88,30 +103,49 @@ public class ISAdminScreen extends AbstractCustomScreen{
 
             Object source = actionEvent.getSource();
             Table currentTable = tabbedTablePane.getTableFromTab(selectedTab);
-            Object[] rowData = null;
+            Object[] rowData = null;    
 
             // Get row data if selected
-            if (selectedTab.equals("Quotations") && currentTable.getSelectedRow() != -1){
+            if (selectedTab.equals("Quotations") && currentTable.getSelectedRow() != -1) {
                 quotationNo = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 0);
                 itemNo = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 1);
                 customerId = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 2);
                 quantity = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 3);
-                transport_costs = (double)currentTable.getValueAt(currentTable.getSelectedRow(), 4);
+                transport_costs = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 4);
                 item_costs = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 5);
                 total_costs = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 6);
                 date = getLocalDate(currentTable.getValueAt(currentTable.getSelectedRow(), 7));
-                rowData = new Object[]{quotationNo, itemNo, customerId, quantity, transport_costs, item_costs, total_costs, date};
-            } else if(selectedTab.equals("Orders") && currentTable.getSelectedRow() != -1){
+                rowData = new Object[] { quotationNo, itemNo, customerId, quantity, transport_costs, item_costs,
+                        total_costs, date };
+            } else if (selectedTab.equals("Orders") && currentTable.getSelectedRow() != -1) {
                 orderNo = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 0);
                 itemNo = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 1);
                 customerId = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 2);
                 quantity = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 3);
-                transport_costs = (double)currentTable.getValueAt(currentTable.getSelectedRow(), 4);
+                transport_costs = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 4);
                 item_costs = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 5);
                 total_costs = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 6);
                 date = getLocalDate(currentTable.getValueAt(currentTable.getSelectedRow(), 7));
                 status = (String) currentTable.getValueAt(currentTable.getSelectedRow(), 8);
-                rowData = new Object[]{orderNo, itemNo, customerId, quantity, transport_costs, item_costs, total_costs, date, status};
+                rowData = new Object[] { orderNo, itemNo, customerId, quantity, transport_costs, item_costs,
+                        total_costs, date, status };
+            } else if (selectedTab.equals("Bills") && currentTable.getSelectedRow() != -1) {
+                int billNo = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 0);
+                orderNo = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 1);
+                double billingPrice = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 2);
+                status = (String) currentTable.getValueAt(currentTable.getSelectedRow(), 3);
+                rowData = new Object[] { billNo, orderNo, billingPrice, status };
+            } else if (selectedTab.equals("Customers") && currentTable.getSelectedRow() != -1) {
+                customerId = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 0);
+                String name = (String) currentTable.getValueAt(currentTable.getSelectedRow(), 1);
+                String address = (String) currentTable.getValueAt(currentTable.getSelectedRow(), 2);
+                String contact = (String) currentTable.getValueAt(currentTable.getSelectedRow(), 3);
+                rowData = new Object[] { customerId, name, address, contact };
+            } else if (selectedTab.equals("TransportCharges") && currentTable.getSelectedRow() != -1) {
+                int transportId = (int) currentTable.getValueAt(currentTable.getSelectedRow(), 0);
+                String transportName = (String) currentTable.getValueAt(currentTable.getSelectedRow(), 1);
+                double chargePerDistance = (double) currentTable.getValueAt(currentTable.getSelectedRow(), 2);
+                rowData = new Object[] { transportId, transportName, chargePerDistance };
             }
 
             if (source == toolbar.getTabButton("CreateQuotation")) {
@@ -189,31 +223,31 @@ public class ISAdminScreen extends AbstractCustomScreen{
                             "Confirm Deletion", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         customerId = Integer.parseInt(currentTable.getValueAt(selectedRow, 0).toString());
-                        
+
                         try {
                             // Delete the customer from the database
                             String query = "DELETE FROM Customers WHERE CustomerId = ?";
                             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                                 stmt.setInt(1, customerId);
                                 int rowsAffected = stmt.executeUpdate();
-                                
+
                                 if (rowsAffected > 0) {
                                     // If successful, remove from the table model
                                     ((DefaultTableModel) currentTable.getModel()).removeRow(
                                             currentTable.convertRowIndexToModel(selectedRow));
-                                    
-                                    JOptionPane.showMessageDialog(null, 
-                                            "Customer deleted successfully", 
+
+                                    JOptionPane.showMessageDialog(null,
+                                            "Customer deleted successfully",
                                             "Success", JOptionPane.INFORMATION_MESSAGE);
                                 } else {
-                                    JOptionPane.showMessageDialog(null, 
-                                            "Failed to delete customer. The record may no longer exist.", 
+                                    JOptionPane.showMessageDialog(null,
+                                            "Failed to delete customer. The record may no longer exist.",
                                             "Error", JOptionPane.ERROR_MESSAGE);
                                 }
                             }
                         } catch (SQLException e) {
                             e.printStackTrace();
-                            
+
                             if (e.getMessage().contains("foreign key constraint")) {
                                 JOptionPane.showMessageDialog(null,
                                         "Cannot delete this customer because it is referenced by existing orders or quotations.",
@@ -247,31 +281,31 @@ public class ISAdminScreen extends AbstractCustomScreen{
                             "Confirm Deletion", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         int transportId = Integer.parseInt(currentTable.getValueAt(selectedRow, 0).toString());
-                        
+
                         try {
                             // Delete the transport charge from the database
                             String query = "DELETE FROM Transport_Charges WHERE TransportId = ?";
                             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                                 stmt.setInt(1, transportId);
                                 int rowsAffected = stmt.executeUpdate();
-                                
+
                                 if (rowsAffected > 0) {
                                     // If successful, remove from the table model
                                     ((DefaultTableModel) currentTable.getModel()).removeRow(
                                             currentTable.convertRowIndexToModel(selectedRow));
-                                    
-                                    JOptionPane.showMessageDialog(null, 
-                                            "Transport charge deleted successfully", 
+
+                                    JOptionPane.showMessageDialog(null,
+                                            "Transport charge deleted successfully",
                                             "Success", JOptionPane.INFORMATION_MESSAGE);
                                 } else {
-                                    JOptionPane.showMessageDialog(null, 
-                                            "Failed to delete transport charge. The record may no longer exist.", 
+                                    JOptionPane.showMessageDialog(null,
+                                            "Failed to delete transport charge. The record may no longer exist.",
                                             "Error", JOptionPane.ERROR_MESSAGE);
                                 }
                             }
                         } catch (SQLException e) {
                             e.printStackTrace();
-                            
+
                             if (e.getMessage().contains("foreign key constraint")) {
                                 JOptionPane.showMessageDialog(null,
                                         "Cannot delete this transport charge because it is referenced by existing orders or quotations.",
@@ -293,15 +327,16 @@ public class ISAdminScreen extends AbstractCustomScreen{
             }
         }
 
-        private void deleteQuotation(int quotationNo){
-            try{
+        private void deleteQuotation(int quotationNo) {
+            try {
                 // Delete quotation in database
                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM Quotations WHERE QuotationNo=?;");
-                stmt.setInt(1, quotationNo );
+                stmt.setInt(1, quotationNo);
                 stmt.execute();
                 stmt.close();
 
-                // Search for the row with matching QuotationNo and remove it from Quotations table
+                // Search for the row with matching QuotationNo and remove it from Quotations
+                // table
                 DefaultTableModel model = (DefaultTableModel) tabbedTablePane.getTableFromTab("Quotations").getModel();
                 for (int i = 0; i < model.getRowCount(); i++) {
                     int currentNo = (Integer) model.getValueAt(i, 0);
@@ -310,12 +345,13 @@ public class ISAdminScreen extends AbstractCustomScreen{
                         break;
                     }
                 }
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
 
-        private void addOrder(int itemNo, int customerId, int quantity, double transport_costs, double item_costs, double total_costs, LocalDate order_date){
+        private void addOrder(int itemNo, int customerId, int quantity, double transport_costs, double item_costs,
+                double total_costs, LocalDate order_date) {
             String status = "Shipped";
             try {
                 // Get item stock_level and reorder_threshold
@@ -338,7 +374,9 @@ public class ISAdminScreen extends AbstractCustomScreen{
                     status = "Pending";
 
                 // Insert new order
-                stmt = conn.prepareStatement("INSERT INTO Orders (ItemNo, CustomerId, quantity, transport_costs, item_costs, total_costs, order_date, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?);", PreparedStatement.RETURN_GENERATED_KEYS);
+                stmt = conn.prepareStatement(
+                        "INSERT INTO Orders (ItemNo, CustomerId, quantity, transport_costs, item_costs, total_costs, order_date, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?);",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
                 stmt.setInt(1, itemNo);
                 stmt.setInt(2, customerId);
                 stmt.setInt(3, quantity);
@@ -356,7 +394,8 @@ public class ISAdminScreen extends AbstractCustomScreen{
                 // Add bill if status is shipped
                 if (status.equals("Shipped")) {
                     // Insert Bill into database
-                    stmt = conn.prepareStatement("INSERT INTO Bills (OrderNo, billing_price, status) VALUES(?, ?, ?);", PreparedStatement.RETURN_GENERATED_KEYS);
+                    stmt = conn.prepareStatement("INSERT INTO Bills (OrderNo, billing_price, status) VALUES(?, ?, ?);",
+                            PreparedStatement.RETURN_GENERATED_KEYS);
                     stmt.setInt(1, orderNo);
                     stmt.setDouble(2, total_costs);
                     stmt.setString(3, "Unpaid");
@@ -368,14 +407,17 @@ public class ISAdminScreen extends AbstractCustomScreen{
                     stmt.close();
 
                     // Update Bills table
-                    DefaultTableModel billTableModel = (DefaultTableModel) tabbedTablePane.getTableFromTab("Bills").getModel();
-                    billTableModel.addRow(new Object[]{billNo, orderNo, total_costs, "Unpaid"});
+                    DefaultTableModel billTableModel = (DefaultTableModel) tabbedTablePane.getTableFromTab("Bills")
+                            .getModel();
+                    billTableModel.addRow(new Object[] { billNo, orderNo, total_costs, "Unpaid" });
                 }
 
                 // Add order row to order table
-                DefaultTableModel orderTableModel = (DefaultTableModel) tabbedTablePane.getTableFromTab("Orders").getModel();
-                orderTableModel.addRow(new Object[]{orderNo, itemNo, customerId, quantity, transport_costs, item_costs, total_costs, order_date, status});
-            } catch (SQLException e){
+                DefaultTableModel orderTableModel = (DefaultTableModel) tabbedTablePane.getTableFromTab("Orders")
+                        .getModel();
+                orderTableModel.addRow(new Object[] { orderNo, itemNo, customerId, quantity, transport_costs,
+                        item_costs, total_costs, order_date, status });
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
@@ -401,7 +443,7 @@ public class ISAdminScreen extends AbstractCustomScreen{
         String query = "SELECT CustomerId, name, address, contact FROM Customers";
 
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+                ResultSet rs = stmt.executeQuery(query)) {
 
             // Clear the table first
             DefaultTableModel model = (DefaultTableModel) tabbedTablePane.getTableFromTab("Customers").getModel();
@@ -425,10 +467,11 @@ public class ISAdminScreen extends AbstractCustomScreen{
         String query = "SELECT TransportId, transport_name, charge_per_distance FROM Transport_Charges";
 
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+                ResultSet rs = stmt.executeQuery(query)) {
 
             // Clear the table first
-            DefaultTableModel model = (DefaultTableModel) tabbedTablePane.getTableFromTab("TransportCharges").getModel();
+            DefaultTableModel model = (DefaultTableModel) tabbedTablePane.getTableFromTab("TransportCharges")
+                    .getModel();
             model.setRowCount(0);
 
             while (rs.next()) {
@@ -443,12 +486,12 @@ public class ISAdminScreen extends AbstractCustomScreen{
             e.printStackTrace();
         }
     }
-    
+
     private void populateQuotationTable() {
         String query = "SELECT QuotationNo, ItemNo, CustomerId, quantity, transport_costs, item_costs, total_costs, date_created FROM Quotations";
 
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+                ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
                 Object[] row = {
@@ -472,7 +515,7 @@ public class ISAdminScreen extends AbstractCustomScreen{
         String query = "SELECT OrderNo, ItemNo, CustomerId, quantity, transport_costs, item_costs, total_costs, order_date, status FROM Orders";
 
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+                ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
                 Object[] row = {
@@ -493,29 +536,29 @@ public class ISAdminScreen extends AbstractCustomScreen{
         }
     }
 
-    private void populateBillTable(){
+    private void populateBillTable() {
         String query = "SELECT BillNo, OrderNo, billing_price, status FROM Bills";
 
-        try(Statement stmt = conn.createStatement()){
+        try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
 
-            while(rs.next()){
+            while (rs.next()) {
                 Object[] row = {
-                    rs.getInt("BillNo"),
-                    rs.getInt("OrderNo"),
-                    rs.getDouble("billing_price"),
-                    rs.getString("status")
+                        rs.getInt("BillNo"),
+                        rs.getInt("OrderNo"),
+                        rs.getDouble("billing_price"),
+                        rs.getString("status")
                 };
                 tabbedTablePane.getTableFromTab("Bills").addRow(row);
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     /**
      * Get the database connection
+     * 
      * @return the database connection object
      */
     public Connection getConnection() {
