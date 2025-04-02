@@ -8,6 +8,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public abstract class AbstractCustomScreen extends JFrame {
     private JPanel topPanel;
@@ -17,6 +19,8 @@ public abstract class AbstractCustomScreen extends JFrame {
 
     protected Toolbar toolbar;
     protected TabbedTablePane tabbedTablePane;
+
+    protected String selectedTab;
 
     public AbstractCustomScreen() {
         super("Order Screen");
@@ -41,6 +45,12 @@ public abstract class AbstractCustomScreen extends JFrame {
 
         // Create and add the toolbar
         toolbar = new Toolbar();
+        toolbar.searchButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                tabbedTablePane.getTableFromTab(selectedTab).filterByRegex(toolbar.searchBar.getText());
+            }
+        });
         mainPanel.add(toolbar, BorderLayout.NORTH);
 
         // Create a TabbedPane containing a table for every tab
@@ -60,10 +70,9 @@ public abstract class AbstractCustomScreen extends JFrame {
         @Override
         public void stateChanged(ChangeEvent changeEvent) {
             int selectedIndex = tabbedTablePane.getSelectedIndex();
-            String selectedTab = tabbedTablePane.getTitleAt(selectedIndex);
+            selectedTab = tabbedTablePane.getTitleAt(selectedIndex);
 
-            // selectedTab E {Quotation, Order, Bill}
-            toolbar.loadConfiguration(selectedTab, tabbedTablePane.getTableFromTab(selectedTab));
+            toolbar.loadConfiguration(selectedTab);
         }
     }
 

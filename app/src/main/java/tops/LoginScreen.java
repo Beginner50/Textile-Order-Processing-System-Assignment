@@ -79,7 +79,7 @@ public class LoginScreen extends JFrame {
 
             // Check credentials based on role
             if (selectedRole.equals("Admin")) {
-                if (username.equals("admin") && password.equals("password")) {
+                if (username.equals("") && password.equals("")) {
                     dispose(); // Close login screen
                     ISAdminScreen isAdminScreen = new ISAdminScreen(conn);
                     isAdminScreen.setVisible(true);

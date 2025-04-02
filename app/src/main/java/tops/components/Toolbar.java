@@ -8,13 +8,11 @@ import java.util.HashMap;
 
 public class Toolbar extends JPanel {
     private JPanel searchPanel;
-    private JTextField searchBar;
-    private JButton searchButton;
+    public JTextField searchBar;
+    public JButton searchButton;
 
     private JPanel tabButtonsPanel;
     protected HashMap<String, HashMap<String, JButton>> buttonsByTab;
-
-    protected Table currentTable;
 
     public Toolbar() {
         super();
@@ -26,16 +24,8 @@ public class Toolbar extends JPanel {
         searchPanel.setBackground(Color.lightGray);
 
         searchBar = new JTextField("", 40);
-        searchButton = new JButton("", new ImageIcon( ButtonFactory.class.getClassLoader().getResource("search.png")));
-        searchButton.addActionListener(
-                new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        currentTable.filterByRegex(searchBar.getText());
-                    }
-                }
-        );
-        searchButton.setToolTipText("Search");
+        searchButton = ButtonFactory.createButton("Search", "search.png");
+        searchButton.setVisible(true);
 
         searchPanel.add(searchBar);
         searchPanel.add(searchButton);
@@ -51,9 +41,7 @@ public class Toolbar extends JPanel {
         this.add(tabButtonsPanel, BorderLayout.EAST);
     }
 
-    public void loadConfiguration(String tabName, Table table){
-        currentTable = table;
-
+    public void loadConfiguration(String tabName){
         // Hide buttons for all tabs
         for (var buttons : buttonsByTab.values())
             for(JButton button : buttons.values())
@@ -85,15 +73,5 @@ public class Toolbar extends JPanel {
                 return buttons.get(buttonName);
         return null;
     }
-
-    public Table getCurrentTable() {
-        return currentTable;
-    }
-
-    public void setCurrentTable(Table currentTable) {
-        this.currentTable = currentTable;
-    }
-
-
 }
 

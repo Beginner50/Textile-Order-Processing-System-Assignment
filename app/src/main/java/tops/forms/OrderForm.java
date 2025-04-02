@@ -10,6 +10,7 @@ import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -17,7 +18,7 @@ import java.util.Date;
 
 public class OrderForm extends JDialog {
     private JTextField orderNoField;
-    private JTextField itemNoField;
+    private JComboBox<String> itemNoComboBox;
     private JSpinner qtySpinner;
     private JComboBox<String> clientComboBox;
     private JFormattedTextField priceField;
@@ -30,6 +31,7 @@ public class OrderForm extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
+    private Connection conn;
     private Table parentTable;
     private Object[] editData;
     private boolean isEditMode;
@@ -44,6 +46,12 @@ public class OrderForm extends JDialog {
         setLocationRelativeTo(null);
         setModal(true);
         setLayout(new BorderLayout());
+
+        // Get database connection from parent's ancestor
+        Window windowAncestor = SwingUtilities.getWindowAncestor(parentTable);
+        if (windowAncestor instanceof tops.ISAdminScreen) {
+            conn = ((tops.ISAdminScreen) windowAncestor).getConnection();
+        }
 
         // Main content panel with padding
         JPanel contentPanel = new JPanel(new BorderLayout());
@@ -76,13 +84,12 @@ public class OrderForm extends JDialog {
         
         orderNoField = new JTextField();
         orderNoField.setToolTipText("Unique identifier for this order");
-        if (isEditMode) {
+        orderNoField.setEditable(false);
+        if (isEditMode)
             orderNoField.setText(data[0].toString());
-            orderNoField.setEditable(false);
-        } else {
-            // Generate a new order number
-            orderNoField.setText("ORD-" + System.currentTimeMillis() % 10000);
-        }
+        else
+            orderNoField.setText("Auto-generated");
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         orderInfoPanel.add(orderNoField, gbc);
@@ -128,7 +135,7 @@ public class OrderForm extends JDialog {
         
         String[] statuses = {"Pending", "Processing", "Shipped", "Delivered", "Cancelled"};
         statusComboBox = new JComboBox<>(statuses);
-        statusComboBox.setSelectedItem("Pending");
+        statusComboBox.setSelectedItem(isEditMode ? "Pending" : data[8]);
         statusComboBox.setToolTipText("Current status of the order");
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -146,26 +153,51 @@ public class OrderForm extends JDialog {
         gbc.gridy = 0;
         gbc.weightx = 0.0;
         itemClientPanel.add(new JLabel("Item No:"), gbc);
-        
-        itemNoField = new JTextField();
-        itemNoField.setToolTipText("Enter the item number");
-        if (isEditMode)
-            itemNoField.setText(data[1].toString());
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        itemClientPanel.add(itemNoField, gbc);
+
+        // Load items from database into combo box
+        itemNoComboBox = new JComboBox<>();
+        populateItemsComboBox();
+        itemNoComboBox.setEditable(false);
+        itemNoComboBox.setToolTipText("Select the item");
+        itemNoComboBox.addActionListener(e -> {
+            if (itemNoComboBox.getSelectedItem() != null) {
+                String selectedValue = itemNoComboBox.getSelectedItem().toString();
+                if (selectedValue != null && selectedValue.contains("-")) {
+                    // Extract item price from the selected item
+                    try {
+                        int itemId = Integer.parseInt(selectedValue.split("-")[0].trim());
+                        double price = getItemPrice(itemId);
+                        priceField.setValue(price);
+                        calculateTotal();
+                    } catch (Exception ex) {
+                        // Ignore, just don't update price
+                    }
+                }
+            }
+        });
+
+        if (isEditMode && data[1] != null)
+              itemNoComboBox.setSelectedItem(getItemName((int) data[1]));
+
         
         // Quantity
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.weightx = 0.0;
-        itemClientPanel.add(new JLabel("Quantity:"), gbc);
-        
+        gbc.weightx = 1.0;
+        itemClientPanel.add(new JLabel("Quantity"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        itemClientPanel.add(itemNoComboBox, gbc);
+
         qtySpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
         qtySpinner.setToolTipText("Number of items to order");
         if (isEditMode)
-            qtySpinner.setValue(data[2]);
+            qtySpinner.setValue(data[3]);
+
         gbc.gridx = 1;
+        gbc.gridy = 1;
         gbc.weightx = 1.0;
         itemClientPanel.add(qtySpinner, gbc);
         
@@ -176,12 +208,22 @@ public class OrderForm extends JDialog {
         itemClientPanel.add(new JLabel("Client Name:"), gbc);
         
         // Use a combo box that can also be edited
-        String[] clients = {"John Doe", "Jane Smith", "Acme Corp", "GlobalTech Ltd."};
-        clientComboBox = new JComboBox<>(clients);
+//        String[] clients = {"John Doe", "Jane Smith", "Acme Corp", "GlobalTech Ltd."};
+        clientComboBox = new JComboBox<>();
+        populateClientComboBox();
         clientComboBox.setEditable(true);
         clientComboBox.setToolTipText("Select or enter client name");
-        if (isEditMode)
-            clientComboBox.setSelectedItem(data[3].toString());
+        if (isEditMode && data[2] != null) {
+            try {
+                PreparedStatement stmt = conn.prepareStatement("SELECT name FROM Customers WHERE CustomerId = ?;");
+                stmt.setInt(1,(int) data[2]);
+                ResultSet rs = stmt.executeQuery();
+                rs.next();
+                clientComboBox.setSelectedItem(rs.getString(1));
+            } catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         itemClientPanel.add(clientComboBox, gbc);
@@ -205,7 +247,7 @@ public class OrderForm extends JDialog {
         if (isEditMode)
             priceField.setValue(Double.parseDouble(data[4].toString()));
         else
-            priceField.setValue(0.0);
+            priceField.setValue(getItemPrice(1));
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         pricingPanel.add(priceField, gbc);
@@ -220,7 +262,7 @@ public class OrderForm extends JDialog {
         transportCostsField.setColumns(10);
         transportCostsField.setToolTipText("Cost of shipping the order");
         if (isEditMode)
-            transportCostsField.setValue(Double.parseDouble(data[5].toString()));
+            transportCostsField.setValue(Double.parseDouble(data[4].toString()));
         else
             transportCostsField.setValue(0.0);
         gbc.gridx = 1;
@@ -251,7 +293,7 @@ public class OrderForm extends JDialog {
         if (isEditMode)
             totalCostsField.setValue(Double.parseDouble(data[6].toString()));
         else
-            totalCostsField.setValue(0.0);
+            totalCostsField.setValue(getItemPrice(1));
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         pricingPanel.add(totalCostsField, gbc);
@@ -312,11 +354,105 @@ public class OrderForm extends JDialog {
         }
     }
 
+    /**
+     * Get the item price based on item ID
+     */
+    private Double getItemPrice(int itemId) {
+        if (conn == null) return 0.0;
+
+        try {
+            String query = "SELECT cost_price FROM Items WHERE ItemNo = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, itemId);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    return rs.getDouble("cost_price");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+    /**
+     * Get the item name based on item ID
+     */
+    private String getItemName(int itemId) {
+        if (conn == null) return null;
+
+        try {
+            String query = "SELECT name, cost_price FROM Items WHERE ItemNo = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, itemId);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    String name = rs.getString("name");
+                    double price = rs.getDouble("cost_price");
+                    return itemId + " - " + name + " ($" + price + ")";
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Populates the item combo box with items from the database
+     */
+    private void populateItemsComboBox() {
+        if (conn == null) return;
+
+        try {
+            String query = "SELECT ItemNo, name, cost_price FROM Items";
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+
+                itemNoComboBox.removeAllItems();
+
+                while (rs.next()) {
+                    int itemNo = rs.getInt("ItemNo");
+                    String itemName = rs.getString("name");
+                    double price = rs.getDouble("cost_price");
+
+                    itemNoComboBox.addItem(itemNo + " - " + itemName + " ($" + price + ")");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Populates the client combo box with customers from the database
+     */
+    private void populateClientComboBox() {
+        if (conn == null) return;
+
+        try {
+            String query = "SELECT CustomerId, name FROM Customers";
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+
+                clientComboBox.removeAllItems();
+
+                while (rs.next()) {
+                    String clientName = rs.getString("name");
+                    clientComboBox.addItem(clientName);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void saveOrder() {
         try {
             // Validate inputs
             if (orderNoField.getText().trim().isEmpty() ||
-                    itemNoField.getText().trim().isEmpty() ||
+                    itemNoComboBox.getSelectedItem() == null ||
                     (int) qtySpinner.getValue() <= 0 ||
                     clientComboBox.getSelectedItem() == null ||
                     clientComboBox.getSelectedItem().toString().trim().isEmpty() ||
@@ -333,8 +469,9 @@ public class OrderForm extends JDialog {
             calculateTotal();
             
             // Get values
-            String orderNo = orderNoField.getText().trim();
-            String itemNo = itemNoField.getText().trim();
+            int orderNo = Integer.parseInt(orderNoField.getText().trim());
+            String selectedItem = itemNoComboBox.getSelectedItem().toString();
+            int itemNoInt = Integer.parseInt(selectedItem.split("-")[0].trim());
             int qty = (int) qtySpinner.getValue();
             String clientName = clientComboBox.getSelectedItem().toString().trim();
             double price = ((Number)priceField.getValue()).doubleValue();
@@ -369,18 +506,6 @@ public class OrderForm extends JDialog {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
-            // Convert itemNo to integer
-            int itemNoInt;
-            try {
-                itemNoInt = Integer.parseInt(itemNo);
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this,
-                        "Item number must be a valid number",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
 
             // Create data array - make sure this matches the expected table columns
             Object[] rowData = {
@@ -408,6 +533,8 @@ public class OrderForm extends JDialog {
                     for (int i = 0; i < rowData.length; i++) {
                         model.setValueAt(rowData[i], parentTable.convertRowIndexToModel(selectedRow), i);
                     }
+                } else{
+                    throw new RuntimeException("Fail");
                 }
             } else {
                 // Add new order to database

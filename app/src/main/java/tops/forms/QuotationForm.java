@@ -98,16 +98,7 @@ public class QuotationForm extends JDialog {
             quotationNoField.setEditable(false);
         } else {
             // Get a new quotation number from database
-            try{
-                ResultSet rs = conn.createStatement().executeQuery("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = \"textileorderprocessing\" AND TABLE_NAME = \"Quotations\";");
-                rs.next();
-                Integer quotationNo = rs.getInt(1);
-                quotationNoField.setText(quotationNo.toString());
-            } catch (SQLException e){
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error: Could not get QuotationNo!");
-                dispose();
-            }
+           quotationNoField.setText("Auto-generated");
         }
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -165,20 +156,14 @@ public class QuotationForm extends JDialog {
             }
         });
         
-        if (isEditMode && data[1] != null) {
-            // Try to select the correct item in the combo box
-            int itemId = Integer.parseInt(data[1].toString());
-            String itemName = getItemName(itemId); 
-            if (itemName != null) {
-                String displayText = itemId + " - " + itemName;
-                itemNoComboBox.setSelectedItem(displayText);
-            }
-        }
+        if (isEditMode && data[1] != null)
+                itemNoComboBox.setSelectedItem(getItemName((int)data[1]));
+
         
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         itemClientPanel.add(itemNoComboBox, gbc);
-        
+
         // Quantity
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -204,14 +189,17 @@ public class QuotationForm extends JDialog {
         populateClientComboBox();
         clientComboBox.setEditable(true);
         clientComboBox.setToolTipText("Select or enter client name");
-        if (isEditMode && data[2] != null)
-            try{
-                ResultSet rs = conn.createStatement().executeQuery("SELECT name FROM Customers WHERE CustomerId = " + data[2] + ";");
+        if (isEditMode && data[2] != null){
+            try {
+                PreparedStatement stmt = conn.prepareStatement("SELECT name FROM Customers WHERE CustomerId = ?;");
+                stmt.setInt(1,(int) data[2]);
+                ResultSet rs = stmt.executeQuery();
                 rs.next();
                 clientComboBox.setSelectedItem(rs.getString(1));
             } catch (SQLException e){
                 e.printStackTrace();
             }
+        }
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         itemClientPanel.add(clientComboBox, gbc);
@@ -362,7 +350,7 @@ public class QuotationForm extends JDialog {
             calculateTotal();
             
             // Get values
-            String quotationNo = quotationNoField.getText().trim();
+            int quotationNo = isEditMode ? Integer.parseInt(quotationNoField.getText()) : -1;
             String selectedItem = itemNoComboBox.getSelectedItem().toString();
             int itemNoInt = Integer.parseInt(selectedItem.split("-")[0].trim());
             int qty = (int) qtySpinner.getValue();
@@ -415,7 +403,7 @@ public class QuotationForm extends JDialog {
             };
 
             // Save/update in database
-            boolean success;
+            boolean success = true;
             if (isEditMode) {
                 // Update existing quotation in database
                 success = updateQuotationInDatabase(quotationNo, itemNoInt, customerId, qty, 
@@ -430,10 +418,11 @@ public class QuotationForm extends JDialog {
                 }
             } else {
                 // Add new quotation to database
-                success = insertQuotationIntoDatabase(itemNoInt, customerId, qty, 
+                quotationNo = insertQuotationIntoDatabase(itemNoInt, customerId, qty,
                                                      price, transportCosts, totalCosts, quotationDate);
                 
-                if (success) {
+                if (quotationNo > 0) {
+                    rowData[0] = quotationNo;
                     // Add new row to table with IDs (not names)
                     parentTable.addRow(rowData);
                 }
@@ -562,14 +551,14 @@ public class QuotationForm extends JDialog {
         return -1; // Customer not found
     }
     
-    private boolean insertQuotationIntoDatabase(int itemNo, int customerId, int quantity,
+    private int insertQuotationIntoDatabase(int itemNo, int customerId, int quantity,
                                           double itemCosts, double transportCosts, double totalCosts,
                                           LocalDate dateCreated) {
         try {
             String query = "INSERT INTO Quotations (ItemNo, CustomerId, quantity, transport_costs, "
                           + "item_costs, total_costs, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)";
             
-            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            try (PreparedStatement stmt = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 stmt.setInt(1, itemNo);
                 stmt.setInt(2, customerId);
                 stmt.setInt(3, quantity);
@@ -585,7 +574,9 @@ public class QuotationForm extends JDialog {
                             "Quotation added successfully",
                             "Success",
                             JOptionPane.INFORMATION_MESSAGE);
-                    return true;
+                    ResultSet genKeys = stmt.getGeneratedKeys();
+                    genKeys.next();
+                    return genKeys.getInt(1);
                 }
             }
         } catch (SQLException e) {
@@ -595,10 +586,10 @@ public class QuotationForm extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
-        return false;
+        return -1;
     }
     
-    private boolean updateQuotationInDatabase(String quotationNo, int itemNo, int customerId, int quantity,
+    private boolean updateQuotationInDatabase(int quotationNo, int itemNo, int customerId, int quantity,
                                         double itemCosts, double transportCosts, double totalCosts,
                                         LocalDate dateCreated) {
         try {
@@ -614,7 +605,7 @@ public class QuotationForm extends JDialog {
                 stmt.setDouble(5, itemCosts);
                 stmt.setDouble(6, totalCosts);
                 stmt.setDate(7, java.sql.Date.valueOf(dateCreated));
-                stmt.setInt(8, Integer.parseInt(quotationNo));
+                stmt.setInt(8, quotationNo);
                 
                 int rowsAffected = stmt.executeUpdate();
                 

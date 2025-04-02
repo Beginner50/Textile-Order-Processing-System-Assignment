@@ -43,12 +43,13 @@ public class InventoryOfficerScreen extends AbstractCustomScreen {
             ButtonFactory.createButton("Delete Item", "delete.png"), buttonHandler);
         toolbar.addTabButton("Items", "UpdateItemStock", 
             ButtonFactory.createButton("Update Stock Level", "update.png"), buttonHandler);
-        tabbedTablePane.addTabbedTable("Items", ITEM_TABLE_COLUMNS);
+        tabbedTablePane.addTableToTab("Items", ITEM_TABLE_COLUMNS);
         
         // Load data from database
         loadItemsData();
-        
-        toolbar.loadConfiguration("Items", tabbedTablePane.getTableFromTab("Items"));
+
+        selectedTab = "Items";
+        toolbar.loadConfiguration("Items");
     }
     
     public void loadItemsData() {
