@@ -1,6 +1,10 @@
 package tops;
 
 import tops.components.*;
+import tops.forms.CustomerForm;
+import tops.forms.OrderForm;
+import tops.forms.QuotationForm;
+import tops.forms.TransportChargeForm;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -11,7 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.awt.BorderLayout;
+import java.sql.Date;
 
 public class ISAdminScreen extends AbstractCustomScreen{
     private final Connection conn;
@@ -89,6 +93,7 @@ public class ISAdminScreen extends AbstractCustomScreen{
                 }
             } else if (source == toolbar.getTabButton("DeleteQuotation")) {
                 int selectedRow = currentTable.getSelectedRow();
+                Integer quotationNo = (Integer) currentTable.getValueAt(selectedRow, 0);
                 if (selectedRow != -1) {
                     int confirm = JOptionPane.showConfirmDialog(null,
                             "Are you sure you want to delete this quotation?",
@@ -96,6 +101,14 @@ public class ISAdminScreen extends AbstractCustomScreen{
                     if (confirm == JOptionPane.YES_OPTION) {
                         ((DefaultTableModel) currentTable.getModel()).removeRow(
                                 currentTable.convertRowIndexToModel(selectedRow));
+                        try{
+                            PreparedStatement stmt = conn.prepareStatement("DELETE FROM Quotations WHERE QuotationNo = ? ;");
+                            stmt.setInt(1, quotationNo);
+                            stmt.execute();
+                            stmt.close();
+                        } catch (SQLException e){
+                            e.printStackTrace();
+                        }
                     }
                 } else {
                     JOptionPane.showMessageDialog(null, "Please select a quotation to delete",
@@ -114,9 +127,68 @@ public class ISAdminScreen extends AbstractCustomScreen{
                             quotationData[i] = currentTable.getValueAt(selectedRow, i);
                         }
 
-                        // Create order data (replace quotation number with order number)
-//                        orderFromQuotation = quotationData.clone();
-//                        orderFromQuotation[0] = "ORD-" + quotationData[0].toString().replace("QUO-", "");
+                        // Remove row from quotation table
+                        ((DefaultTableModel) currentTable.getModel()).removeRow(
+                                currentTable.convertRowIndexToModel(selectedRow));
+
+                        // Insert new order
+                        try {
+                            // Get table values
+                            Integer itemNo = (Integer) quotationData[1];
+                            Integer customerId = (Integer) quotationData[2];
+                            Integer quantity = (Integer) quotationData[3];
+                            Double transport_costs = (Double) quotationData[4];
+                            Double item_costs = (Double) quotationData[5];
+                            Double total_costs = (Double) quotationData[6];
+                            Date order_date = (Date) quotationData[7];
+                            String status = "Shipped";
+
+                            // Get item stock_level and reorder_threshold
+                            PreparedStatement stmt = conn.prepareStatement("SELECT stock_level FROM Items WHERE ItemNo = ?;");
+                            stmt.setInt(1, itemNo);
+                            ResultSet rs = stmt.executeQuery();
+                            rs.next();
+                            int stock_level = rs.getInt(1);
+                            stmt.close();
+
+                            // Update item stock_level if quantity < stock_level
+                            if(stock_level >= quantity){
+                                stock_level -= quantity;
+                                stmt = conn.prepareStatement("UPDATE Items SET stock_level = ? WHERE ItemNo = ?;");
+                                stmt.setInt(1, stock_level);
+                                stmt.setInt(2, itemNo);
+                                stmt.execute();
+                                stmt.close();
+                            } else
+                                status = "Pending";
+
+                            // Insert new order
+                            stmt = conn.prepareStatement("INSERT INTO Orders (ItemNo, CustomerId, quantity, transport_costs, item_costs, total_costs, order_date, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?);", PreparedStatement.RETURN_GENERATED_KEYS);
+                            stmt.setInt(1, itemNo);
+                            stmt.setInt(2, customerId);
+                            stmt.setInt(3, quantity);
+                            stmt.setDouble(4, transport_costs);
+                            stmt.setDouble(5, item_costs);
+                            stmt.setDouble(6, total_costs);
+                            stmt.setDate(7, order_date);
+                            stmt.setString(8, status);
+                            stmt.executeUpdate();
+                            ResultSet generatedKeys = stmt.getGeneratedKeys();
+                            int orderNo = generatedKeys.getInt(1);
+                            stmt.close();
+
+                            // Add bill if status is 
+
+                            // Delete quotation
+                            stmt = conn.prepareStatement("DELETE FROM Quotations WHERE QuotationNo=?;");
+                            stmt.setInt(1, (int) quotationData[0]);
+                            stmt.execute();
+                            stmt.close();
+
+                            // Add order row to order table
+                            DefaultTableModel orderTableModel = (DefaultTableModel) tabbedTablePane.getTableFromTab("Orders").getModel();
+                            orderTableModel.addRow(new Object[]{orderNo, itemNo, customerId, quantity, transport_costs, item_costs, total_costs, order_date, status});
+                        } catch (SQLException e){}
 
                         // Delete the quotation
                         ((DefaultTableModel) currentTable.getModel()).removeRow(currentTable.convertRowIndexToModel(selectedRow));

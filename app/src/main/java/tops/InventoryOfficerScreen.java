@@ -2,7 +2,7 @@ package tops;
 
 import tops.components.ButtonFactory;
 import tops.components.Table;
-import tops.components.ItemForm;
+import tops.forms.ItemForm;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -15,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 public class InventoryOfficerScreen extends AbstractCustomScreen {
     private final Connection conn;

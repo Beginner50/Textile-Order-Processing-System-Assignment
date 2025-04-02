@@ -1,4 +1,6 @@
-package tops.components;
+package tops.forms;
+
+import tops.components.Table;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

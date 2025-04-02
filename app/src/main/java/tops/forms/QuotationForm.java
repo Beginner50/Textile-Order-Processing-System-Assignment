@@ -1,4 +1,6 @@
-package tops.components;
+package tops.forms;
+
+import tops.components.Table;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -89,13 +91,23 @@ public class QuotationForm extends JDialog {
         quotationInfoPanel.add(new JLabel("Quotation No:"), gbc);
         
         quotationNoField = new JTextField();
+        quotationNoField.setEditable(false);
         quotationNoField.setToolTipText("Unique identifier for this quotation");
         if (isEditMode) {
             quotationNoField.setText(data[0].toString());
             quotationNoField.setEditable(false);
         } else {
-            // Generate a new quotation number
-            quotationNoField.setText("QUO-" + System.currentTimeMillis() % 10000);
+            // Get a new quotation number from database
+            try{
+                ResultSet rs = conn.createStatement().executeQuery("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = \"textileorderprocessing\" AND TABLE_NAME = \"Quotations\";");
+                rs.next();
+                Integer quotationNo = rs.getInt(1);
+                quotationNoField.setText(quotationNo.toString());
+            } catch (SQLException e){
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error: Could not get QuotationNo!");
+                dispose();
+            }
         }
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -175,8 +187,8 @@ public class QuotationForm extends JDialog {
         
         qtySpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
         qtySpinner.setToolTipText("Number of items for quotation");
-        if (isEditMode && data[2] != null)
-            qtySpinner.setValue(Integer.parseInt(data[2].toString()));
+        if (isEditMode && data[3] != null)
+            qtySpinner.setValue(Integer.parseInt(data[3].toString()));
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         itemClientPanel.add(qtySpinner, gbc);
@@ -192,8 +204,14 @@ public class QuotationForm extends JDialog {
         populateClientComboBox();
         clientComboBox.setEditable(true);
         clientComboBox.setToolTipText("Select or enter client name");
-        if (isEditMode && data[3] != null)
-            clientComboBox.setSelectedItem(data[3].toString());
+        if (isEditMode && data[2] != null)
+            try{
+                ResultSet rs = conn.createStatement().executeQuery("SELECT name FROM Customers WHERE CustomerId = " + data[2] + ";");
+                rs.next();
+                clientComboBox.setSelectedItem(rs.getString(1));
+            } catch (SQLException e){
+                e.printStackTrace();
+            }
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         itemClientPanel.add(clientComboBox, gbc);
@@ -214,10 +232,10 @@ public class QuotationForm extends JDialog {
         priceField = new JFormattedTextField(currencyFormatter);
         priceField.setColumns(10);
         priceField.setToolTipText("Item cost (excluding transport)");
-        if (isEditMode && data[4] != null)
-            priceField.setValue(Double.parseDouble(data[4].toString()));
+        if (isEditMode && data[5] != null)
+            priceField.setValue(data[5]);
         else
-            priceField.setValue(0.0);
+            priceField.setValue(getItemPrice(1));
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         pricingPanel.add(priceField, gbc);
@@ -231,8 +249,8 @@ public class QuotationForm extends JDialog {
         transportCostsField = new JFormattedTextField(currencyFormatter);
         transportCostsField.setColumns(10);
         transportCostsField.setToolTipText("Cost of transporting the items");
-        if (isEditMode && data[5] != null)
-            transportCostsField.setValue(Double.parseDouble(data[5].toString()));
+        if (isEditMode && data[4] != null)
+            transportCostsField.setValue(Double.parseDouble(data[4].toString()));
         else
             transportCostsField.setValue(0.0);
         gbc.gridx = 1;
@@ -263,7 +281,7 @@ public class QuotationForm extends JDialog {
         if (isEditMode && data[6] != null)
             totalCostsField.setValue(Double.parseDouble(data[6].toString()));
         else
-            totalCostsField.setValue(0.0);
+            totalCostsField.setValue(getItemPrice(1));
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         pricingPanel.add(totalCostsField, gbc);
@@ -485,7 +503,7 @@ public class QuotationForm extends JDialog {
     /**
      * Get the item price based on item ID
      */
-    private double getItemPrice(int itemId) {
+    private Double getItemPrice(int itemId) {
         if (conn == null) return 0.0;
         
         try {
@@ -527,7 +545,7 @@ public class QuotationForm extends JDialog {
         }
         return null;
     }
-    
+
     private int getCustomerIdByName(Connection conn, String customerName) {
         try {
             String query = "SELECT CustomerId FROM Customers WHERE name = ?";

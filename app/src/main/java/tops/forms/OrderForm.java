@@ -1,4 +1,7 @@
-package tops.components;
+package tops.forms;
+
+import tops.components.TabbedTablePane;
+import tops.components.Table;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -7,11 +10,6 @@ import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
