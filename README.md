@@ -2,10 +2,10 @@
 The textile order processing system was an OOT (Object Oriented Technique) team assignment project, covering our understanding of the cross-platform GUI library (swing), database drivers as well as other general best practices in an OOP language like java, design patterns (Factory) & CRUD operations on data.
 
 ### Contributors
-Prashant Jatoo
-Tirthesh Parbutee
-Shreeyash Sewnundun
-Jayesh Nowbuth (UML Documentation)
+- Prashant Jatoo
+- Tirthesh Parbutee
+- Shreeyash Sewnundun
+- Jayesh Nowbuth (UML Documentation)
 
 ### Features 
 - Authentication
