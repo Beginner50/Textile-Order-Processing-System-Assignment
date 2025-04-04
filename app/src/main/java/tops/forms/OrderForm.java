@@ -179,7 +179,6 @@ public class OrderForm extends JDialog {
         if (isEditMode && data[1] != null)
               itemNoComboBox.setSelectedItem(getItemName((int) data[1]));
 
-        
         // Quantity
         gbc.gridx = 0;
         gbc.gridy = 1;
